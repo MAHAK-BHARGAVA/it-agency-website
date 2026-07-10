@@ -1,4 +1,4 @@
-// Logic: first try to match a Service+City combo. If nothing found, try Service+State using that same URL segment. If neither matches, 404.
+// Logic: first try to match a Service+City combo. If nothing found, try Service+State using that same URL segment.  then service+industry combo. If neither matches, 404.
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 
@@ -44,6 +44,24 @@ export default async function ServiceLocationPage({ params }: Props) {
           <strong>{serviceState.state.name}</strong>?
         </p>
         <p>{serviceState.introText}</p>
+      </main>
+    )
+  }
+
+  const serviceIndustry = await prisma.serviceIndustry.findFirst({
+    where: { service: { slug: services }, industry: { slug: city } },
+    include: { service: true, industry: true },
+  })
+
+  if (serviceIndustry) {
+    return (
+      <main style={{ padding: '2rem' }}>
+        <h1>{serviceIndustry.heroHeading ?? `${serviceIndustry.service.name} for ${serviceIndustry.industry.name}`}</h1>
+        <p>
+          <strong>{serviceIndustry.service.name}</strong> solutions built for the{' '}
+          <strong>{serviceIndustry.industry.name}</strong> industry.
+        </p>
+        <p>{serviceIndustry.introText}</p>
       </main>
     )
   }
