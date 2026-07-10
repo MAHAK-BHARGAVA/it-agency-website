@@ -1,42 +1,31 @@
 import { prisma } from '@/lib/prisma'
 
 export default async function Home() {
-  const services = await prisma.service.findMany()
-
-  const seoInJaipur = await prisma.serviceCity.findFirst({
-    where: {
-      service: { slug: 'seo' },
-      city: { slug: 'jaipur' },
-    },
-    include: {
-      service: true,
-      city: true,
-    },
-  })
+  const services = await prisma.service.findMany({ orderBy: { name: 'asc' } })
+  const industries = await prisma.industry.findMany({ orderBy: { name: 'asc' } })
 
   return (
     <main style={{ padding: '2rem' }}>
       <h1>ABC Technologies</h1>
+      <p>Helping businesses grow online through websites, apps, and digital marketing.</p>
+      <a href="/contact">Get a Free Quote</a>
 
       <h2>Our Services</h2>
       <ul>
-        {services.map((service) => (
-          <li key={service.id}>
-            <strong>{service.name}</strong> — {service.description}
-          </li>
+        {services.map((s) => (
+          <li key={s.id}><a href={`/services/${s.slug}`}>{s.name}</a></li>
         ))}
       </ul>
 
-      <h2>Test: Service + City Page Data</h2>
-      {seoInJaipur ? (
-        <div>
-          <p><strong>Hero Heading:</strong> {seoInJaipur.heroHeading}</p>
-          <p><strong>Service:</strong> {seoInJaipur.service.name}</p>
-          <p><strong>City:</strong> {seoInJaipur.city.name}, {seoInJaipur.city.state}</p>
-        </div>
-      ) : (
-        <p>No Service+City combination found.</p>
-      )}
+      <h2>Industries We Serve</h2>
+      <ul>
+        {industries.map((i) => (
+          <li key={i.id}><a href={`/industries/${i.slug}`}>{i.name}</a></li>
+        ))}
+      </ul>
+
+      <h2>Why Choose Us</h2>
+      <p>We combine technical expertise with a results-driven approach to help your business succeed online.</p>
     </main>
   )
 }
