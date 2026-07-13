@@ -83,7 +83,7 @@ model Industry {
 
 model ServiceCity {
   id          Int      @id @default(autoincrement())
-  service     Service  @relation(fields: [serviceId], references: [id])
+  service     Service  @relation(fields: [serviceId], references: [id],onDelete: Cascade)
   serviceId   Int
   city        City     @relation(fields: [cityId], references: [id])
   cityId      Int
@@ -92,11 +92,12 @@ model ServiceCity {
   createdAt   DateTime @default(now())
 
   @@unique([serviceId, cityId])
+  
 }
 
 model ServiceState {
   id          Int      @id @default(autoincrement())
-  service     Service  @relation(fields: [serviceId], references: [id])
+  service     Service  @relation(fields: [serviceId], references: [id],onDelete: Cascade)
   serviceId   Int
   state       State    @relation(fields: [stateId], references: [id])
   stateId     Int
@@ -109,7 +110,7 @@ model ServiceState {
 
 model ServiceIndustry {
   id          Int      @id @default(autoincrement())
-  service     Service  @relation(fields: [serviceId], references: [id])
+  service     Service  @relation(fields: [serviceId], references: [id],onDelete: Cascade)
   serviceId   Int
   industry    Industry @relation(fields: [industryId], references: [id])
   industryId  Int
@@ -186,6 +187,7 @@ model User {
   role      String   @default("admin")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  refreshTokens RefreshToken[]
 }
 
 model Lead {
@@ -193,9 +195,19 @@ model Lead {
   name      String
   email     String
   phone     String
-  service   Service? @relation(fields: [serviceId], references: [id])
+  service   Service? @relation(fields: [serviceId], references: [id],onDelete: SetNull)
   serviceId Int?
   city      String?
   message   String   @db.Text
+  createdAt DateTime @default(now())
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
   createdAt DateTime @default(now())
 }
