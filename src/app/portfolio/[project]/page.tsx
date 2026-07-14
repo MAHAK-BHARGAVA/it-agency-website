@@ -1,9 +1,25 @@
 // src/app/portfolio/[project]/page.tsx/portfolio/some-project-slugOne single project's full detail page
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
+import { Metadata } from 'next'
 
 type Props = {
   params: Promise<{ project: string }>
+}
+
+export async function generateStaticParams() {
+  const projects = await prisma.portfolio.findMany()
+  return projects.map((p) => ({ project: p.slug }))
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { project } = await params
+  const data = await prisma.portfolio.findUnique({ where: { slug: project } })
+  if (!data) return { title: 'Not Found' }
+  return {
+    title: `${data.projectName} | Our Work`,
+    description: data.resultSummary.slice(0, 160),
+  }
 }
 
 export default async function PortfolioDetailPage({ params }: Props) {

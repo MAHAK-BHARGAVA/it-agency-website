@@ -6,9 +6,25 @@
 
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
+import { Metadata } from 'next'
 
 type Props = {
   params: Promise<{ industry: string }>
+}
+
+export async function generateStaticParams() {
+  const industries = await prisma.industry.findMany()
+  return industries.map((i) => ({ industry: i.slug }))
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { industry } = await params
+  const data = await prisma.industry.findUnique({ where: { slug: industry } })
+  if (!data) return { title: 'Not Found' }
+  return {
+    title: data.metaTitle || `${data.name} Solutions | ABC Technologies`,
+    description: data.metaDescription || data.description.slice(0, 160),
+  }
 }
 
 export default async function IndustryPage({ params }: Props) {

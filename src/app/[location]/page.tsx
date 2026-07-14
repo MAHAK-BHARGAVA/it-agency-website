@@ -1,10 +1,42 @@
-// Logic: first try to match a City c If nothing found, try State using that same URL segment. If neither matches, 404.
+// Logic: first try to match a City. If nothing found, try State using that same URL segment. If neither matches, 404.
 
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
+import { Metadata } from 'next'
 
 type Props = {
   params: Promise<{ location: string }>
+}
+
+export async function generateStaticParams() {
+  const cities = await prisma.city.findMany()
+  const states = await prisma.state.findMany()
+  return [
+    ...cities.map((c) => ({ location: c.slug })),
+    ...states.map((s) => ({ location: s.slug })),
+  ]
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { location } = await params
+
+  const city = await prisma.city.findUnique({ where: { slug: location }, include: { state: true } })
+  if (city) {
+    return {
+      title: city.metaTitle || `${city.name}${city.state ? `, ${city.state.name}` : ''} | ABC Technologies`,
+      description: city.metaDescription || `Digital services for businesses in ${city.name}.`,
+    }
+  }
+
+  const state = await prisma.state.findUnique({ where: { slug: location } })
+  if (state) {
+    return {
+      title: state.metaTitle || `${state.name} | ABC Technologies`,
+      description: state.metaDescription || `Digital services for businesses across ${state.name}.`,
+    }
+  }
+
+  return { title: 'Not Found' }
 }
 
 export default async function LocationPage({ params }: Props) {
