@@ -1,56 +1,81 @@
 // Logic: first try to match a City. If nothing found, try State using that same URL segment. If neither matches, 404.
 
-import { prisma } from '@/lib/prisma'
-import { notFound } from 'next/navigation'
-import { Metadata } from 'next'
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
+import { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
 
 type Props = {
-  params: Promise<{ location: string }>
-}
+  params: Promise<{ location: string }>;
+};
 
 export async function generateStaticParams() {
-  const cities = await prisma.city.findMany()
-  const states = await prisma.state.findMany()
+  const cities = await prisma.city.findMany();
+  const states = await prisma.state.findMany();
   return [
     ...cities.map((c) => ({ location: c.slug })),
     ...states.map((s) => ({ location: s.slug })),
-  ]
+  ];
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { location } = await params
+  const { location } = await params;
 
-  const city = await prisma.city.findUnique({ where: { slug: location }, include: { state: true } })
+  const city = await prisma.city.findUnique({
+    where: { slug: location },
+    include: { state: true },
+  });
   if (city) {
     return {
-      title: city.metaTitle || `${city.name}${city.state ? `, ${city.state.name}` : ''} | ABC Technologies`,
-      description: city.metaDescription || `Digital services for businesses in ${city.name}.`,
-    }
+      title:
+        city.metaTitle ||
+        `${city.name}${city.state ? `, ${city.state.name}` : ""} | ABC Technologies`,
+      description:
+        city.metaDescription ||
+        `Digital services for businesses in ${city.name}.`,
+    };
   }
 
-  const state = await prisma.state.findUnique({ where: { slug: location } })
+  const state = await prisma.state.findUnique({ where: { slug: location } });
   if (state) {
     return {
       title: state.metaTitle || `${state.name} | ABC Technologies`,
-      description: state.metaDescription || `Digital services for businesses across ${state.name}.`,
-    }
+      description:
+        state.metaDescription ||
+        `Digital services for businesses across ${state.name}.`,
+    };
   }
 
-  return { title: 'Not Found' }
+  return { title: "Not Found" };
 }
 
 export default async function LocationPage({ params }: Props) {
-  const { location } = await params
+  const { location } = await params;
 
   const city = await prisma.city.findUnique({
     where: { slug: location },
     include: { state: true, serviceCities: { include: { service: true } } },
-  })
+  });
 
   if (city) {
     return (
-      <main style={{ padding: '2rem' }}>
-        <h1>{city.name}{city.state ? `, ${city.state.name}` : ''}</h1>
+      <main style={{ padding: "2rem" }}>
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "LocalBusiness",
+            name: `ABC Technologies - ${city.name}`,
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: city.name,
+              addressRegion: city.state?.name,
+            },
+          }}
+        />
+        <h1>
+          {city.name}
+          {city.state ? `, ${city.state.name}` : ""}
+        </h1>
         <p>We proudly serve businesses in {city.name}.</p>
         <h2>Services available in {city.name}</h2>
         <ul>
@@ -63,23 +88,25 @@ export default async function LocationPage({ params }: Props) {
           ))}
         </ul>
       </main>
-    )
+    );
   }
 
   const state = await prisma.state.findUnique({
     where: { slug: location },
     include: { cities: true, serviceStates: { include: { service: true } } },
-  })
+  });
 
   if (state) {
     return (
-      <main style={{ padding: '2rem' }}>
+      <main style={{ padding: "2rem" }}>
         <h1>{state.name}</h1>
         <p>We proudly serve businesses across {state.name}.</p>
         <h2>Cities we serve</h2>
         <ul>
           {state.cities.map((c) => (
-            <li key={c.id}><a href={`/${c.slug}`}>{c.name}</a></li>
+            <li key={c.id}>
+              <a href={`/${c.slug}`}>{c.name}</a>
+            </li>
           ))}
         </ul>
         <h2>Services available across {state.name}</h2>
@@ -93,8 +120,8 @@ export default async function LocationPage({ params }: Props) {
           ))}
         </ul>
       </main>
-    )
+    );
   }
 
-  notFound()
+  notFound();
 }
