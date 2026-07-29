@@ -32,10 +32,23 @@ export default async function IndustryPage({ params }: Props) {
 
   const industryData = await prisma.industry.findUnique({
     where: { slug: industry },
-    include: { serviceIndustries: { include: { service: true } } },
+    include: { serviceIndustries: { include: { service: true } },testimonials:true, },
   })
 
   if (!industryData) notFound()
+  
+    let displayTestimonials = industryData.testimonials
+
+    if (displayTestimonials.length === 0) {
+      displayTestimonials = await prisma.testimonial.findMany({
+        where: {
+          services: { none: {} },
+          cities: { none: {} },
+          industries: { none: {} },
+        },
+        take: 3,
+      })
+    }
 
   return (
     <main style={{ padding: '2rem' }}>
@@ -47,6 +60,14 @@ export default async function IndustryPage({ params }: Props) {
           <li key={si.id}>{si.service.name}</li>
         ))}
       </ul>
+      {displayTestimonials.length > 0 && (
+  <>
+    <h2>Testimonials</h2>
+    {displayTestimonials.map((t) => (
+      <p key={t.id}>&ldquo;{t.quote}&rdquo; — {t.clientName}</p>
+    ))}
+  </>
+)}
     </main>
   )
 }

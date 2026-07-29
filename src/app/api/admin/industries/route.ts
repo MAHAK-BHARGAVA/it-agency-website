@@ -5,7 +5,12 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   const auth = await requireAuth(request)
   if (!auth.authorized) return auth.response
-  const industries = await prisma.industry.findMany({ orderBy: { name: 'asc' } })
+  const industries = await prisma.industry.findMany({
+    orderBy: { name: 'asc' },
+    include: {
+      _count: { select: { serviceIndustries: true } },
+    },
+  })
   return NextResponse.json(industries)
 }
 

@@ -1,0 +1,33 @@
+-- CreateTable
+CREATE TABLE `SiteSetting` (
+    `id` INTEGER NOT NULL DEFAULT 1,
+    `companyName` VARCHAR(191) NOT NULL,
+    `logo` VARCHAR(191) NOT NULL,
+    `whiteLogo` VARCHAR(191) NULL,
+    `favicon` VARCHAR(191) NULL,
+    `heroBadge` VARCHAR(191) NOT NULL,
+    `heroTitle` VARCHAR(191) NOT NULL,
+    `heroDescription` TEXT NOT NULL,
+    `heroPrimaryBtnText` VARCHAR(191) NOT NULL,
+    `heroPrimaryBtnLink` VARCHAR(191) NOT NULL,
+    `heroSecondaryBtnText` VARCHAR(191) NULL,
+    `heroSecondaryBtnLink` VARCHAR(191) NULL,
+    `heroImage` VARCHAR(191) NOT NULL,
+    `aboutTitle` VARCHAR(191) NOT NULL,
+    `aboutDescription` TEXT NOT NULL,
+    `aboutExperience` INTEGER NOT NULL,
+    `aboutImage` VARCHAR(191) NOT NULL,
+    `phone` VARCHAR(191) NOT NULL,
+    `email` VARCHAR(191) NOT NULL,
+    `address` VARCHAR(191) NOT NULL,
+    `facebook` VARCHAR(191) NULL,
+    `instagram` VARCHAR(191) NULL,
+    `linkedin` VARCHAR(191) NULL,
+    `twitter` VARCHAR(191) NULL,
+    `youtube` VARCHAR(191) NULL,
+    `footerCopyright` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

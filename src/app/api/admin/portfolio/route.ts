@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = await requireAuth(request)
   if (!auth.authorized) return auth.response
-  const { projectName, slug, resultSummary, clientName, projectUrl, thumbnail, serviceIds, industryIds } = await request.json()
+  const { projectName, slug, resultSummary, clientName, projectUrl, thumbnail, challenge, solution, process, testimonialId, serviceIds, industryIds } = await request.json()
 
   const project = await prisma.portfolio.create({
     data: {
@@ -25,6 +25,10 @@ export async function POST(request: NextRequest) {
       clientName,
       projectUrl,
       thumbnail,
+      challenge,
+      solution,
+      process,
+      testimonialId: testimonialId ? Number(testimonialId) : null,
       services: serviceIds ? { connect: serviceIds.map((id: number) => ({ id })) } : undefined,
       industries: industryIds ? { connect: industryIds.map((id: number) => ({ id })) } : undefined,
     },

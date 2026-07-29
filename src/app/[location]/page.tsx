@@ -23,8 +23,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const city = await prisma.city.findUnique({
     where: { slug: location },
-    include: { state: true },
+    include: { 
+      state: true,
+ }
   });
+
+
   if (city) {
     return {
       title:
@@ -54,10 +58,22 @@ export default async function LocationPage({ params }: Props) {
 
   const city = await prisma.city.findUnique({
     where: { slug: location },
-    include: { state: true, serviceCities: { include: { service: true } } },
+    include: { state: true, serviceCities: { include: { service: true } },testimonials : true ,faqs: true,},
   });
 
+
+
   if (city) {
+    let cityTestimonials = await prisma.testimonial.findMany({
+      where: { cities: { some: { id: city.id } } },
+    })
+
+    if (cityTestimonials.length === 0) {
+      cityTestimonials = await prisma.testimonial.findMany({
+        where: { services: { none: {} }, cities: { none: {} }, industries: { none: {} } },
+        take: 3,
+      })
+    }
     return (
       <main style={{ padding: "2rem" }}>
         <JsonLd
@@ -87,6 +103,16 @@ export default async function LocationPage({ params }: Props) {
             </li>
           ))}
         </ul>
+        {cityTestimonials.length > 0 && (
+          <>
+            <h2>What Our Clients Say</h2>
+            {cityTestimonials.map((t) => (
+              <p key={t.id}>&ldquo;{t.quote}&rdquo; — {t.clientName}</p>
+            ))}
+          </>
+        )}
+
+
       </main>
     );
   }

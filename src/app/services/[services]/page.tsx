@@ -49,6 +49,19 @@ export default async function ServicePage({ params }: Props) {
     notFound();
   }
 
+  let displayTestimonials = service.testimonials
+
+if (displayTestimonials.length === 0) {
+  displayTestimonials = await prisma.testimonial.findMany({
+    where: {
+      services: { none: {} },
+      cities: { none: {} },
+      industries: { none: {} },
+    },
+    take: 3,
+  })
+}
+
   return (
     <main style={{ padding: "2rem" }}>
       <JsonLd
@@ -117,16 +130,14 @@ export default async function ServicePage({ params }: Props) {
         </>
       )}
 
-      {service.testimonials.length > 0 && (
-        <>
-          <h2>Testimonials</h2>
-          {service.testimonials.map((t) => (
-            <p key={t.id}>
-              &ldquo;{t.quote}&rdquo; — {t.clientName}
-            </p>
-          ))}
-        </>
-      )}
+     {displayTestimonials.length > 0 && (
+  <>
+    <h2>Testimonials</h2>
+    {displayTestimonials.map((t) => (
+      <p key={t.id}>&ldquo;{t.quote}&rdquo; — {t.clientName}</p>
+    ))}
+  </>
+)}
     </main>
   );
 }

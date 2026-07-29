@@ -20,7 +20,8 @@ export async function PUT(request: NextRequest, { params }: Props) {
   const auth = await requireAuth(request)
   if (!auth.authorized) return auth.response
   const { id } = await params
-  const { projectName, slug, resultSummary, clientName, projectUrl, thumbnail, serviceIds } = await request.json()
+  const { projectName, slug, resultSummary, clientName, projectUrl, thumbnail, serviceIds ,
+    challenge, solution, process, testimonialId } = await request.json()
 
   const project = await prisma.portfolio.update({
     where: { id: Number(id) },
@@ -31,6 +32,10 @@ export async function PUT(request: NextRequest, { params }: Props) {
       clientName,
       projectUrl,
       thumbnail,
+      challenge, 
+      solution, 
+      process,
+      testimonialId: testimonialId ? Number(testimonialId) : null,
       services: serviceIds ? { set: serviceIds.map((sid: number) => ({ id: sid })) } : undefined,
     },
   })
