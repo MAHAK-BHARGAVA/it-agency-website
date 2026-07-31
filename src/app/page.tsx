@@ -35,15 +35,18 @@ import About from "@/components/home/About/About";
 import Services from "@/components/home/Services/Services";
 import Portfolio from "@/components/home/Portfolio/Portfolio";
 import Process from "@/components/sections/process/Process";
+import Testimonials from "@/components/sections/testimonials/Testimonials";
 
 import { getServices } from "@/repositories/service.repository";
 import { getPortfolio } from "@/repositories/portfolio.repository";
+import { getTestimonials } from "@/repositories/testimonial.repository";
 
 export default async function Home() {
-   const [services, portfolio] = await Promise.all([
+  const [services, portfolio, testimonials] = await Promise.all([
     getServices(),
     getPortfolio(),
-  ]);   
+    getTestimonials(),
+  ]);
 
   return (
     <>
@@ -54,9 +57,12 @@ export default async function Home() {
       <About />
 
       <Services services={services} />
-      <Process />
 
       <Portfolio portfolio={portfolio} />
+
+      <Process />
+
+      <Testimonials testimonials={testimonials} />
     </>
   );
 }
