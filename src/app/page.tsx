@@ -39,10 +39,10 @@ import { getServices } from "@/repositories/service.repository";
 import { getPortfolio } from "@/repositories/portfolio.repository";
 
 export default async function Home() {
-
-  const services = await getServices(6);
-
-  const portfolio = await getPortfolio(4);
+   const [services, portfolio] = await Promise.all([
+    getServices(),
+    getPortfolio(),
+  ]);   
 
   return (
     <>

@@ -1,14 +1,22 @@
 import { prisma } from "@/lib/prisma";
 
-export async function getPortfolio(limit = 3) {
+export async function getPortfolio() {
   return prisma.portfolio.findMany({
-    take: limit,
     orderBy: {
       createdAt: "desc",
     },
     include: {
       services: true,
       industries: true,
+    },
+     take: 4,
+  });
+}
+
+export async function getAllPortfolio() {
+  return prisma.portfolio.findMany({
+    orderBy: {
+      createdAt: "desc",
     },
   });
 }
