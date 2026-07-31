@@ -63,3 +63,28 @@ h6 {
 .float {
   animation: float 5s ease-in-out infinite;
 }
+
+@keyframes tech-stack-scroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.tech-stack-track {
+  animation: tech-stack-scroll 35s linear infinite;
+  will-change: transform;
+}
+
+.tech-stack-track:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tech-stack-track {
+    animation: none;
+  }
+}

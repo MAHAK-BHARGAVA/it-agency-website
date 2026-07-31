@@ -37,6 +37,7 @@ import Process from "@/components/sections/process/Process";
 import Testimonials from "@/components/sections/testimonials/Testimonials";
 import FAQ from "@/components/sections/faq/FAQ";
 import CTA from "@/components/sections/cta/CTA";
+import TechStack from "@/components/home/TechStack/TechStack";
 
 import { getServices } from "@/repositories/service.repository";
 import { getPortfolio } from "@/repositories/portfolio.repository";
@@ -59,6 +60,8 @@ export default async function Home() {
       <About />
 
       <Services services={services} />
+
+       <TechStack />
 
       <Portfolio portfolio={portfolio} />
 
