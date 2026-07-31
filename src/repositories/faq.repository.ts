@@ -1,5 +1,14 @@
 import { prisma } from "@/lib/prisma";
 
-export async function getFaqs() {
-  return prisma.faq.findMany();
+export async function getFAQs() {
+  return prisma.faq.findMany({
+    orderBy: {
+      createdAt: "asc",
+    },
+    select: {
+      id: true,
+      question: true,
+      answer: true,
+    },
+  });
 }
