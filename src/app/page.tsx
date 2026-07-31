@@ -29,7 +29,6 @@
 //     </main>
 //   )
 // }
-import Navbar from "@/components/layout/Navbar";
 import Hero from "@/components/home/Hero/Hero";
 import About from "@/components/home/About/About";
 import Services from "@/components/home/Services/Services";
@@ -37,6 +36,7 @@ import Portfolio from "@/components/home/Portfolio/Portfolio";
 import Process from "@/components/sections/process/Process";
 import Testimonials from "@/components/sections/testimonials/Testimonials";
 import FAQ from "@/components/sections/faq/FAQ";
+import CTA from "@/components/sections/cta/CTA";
 
 import { getServices } from "@/repositories/service.repository";
 import { getPortfolio } from "@/repositories/portfolio.repository";
@@ -53,7 +53,6 @@ export default async function Home() {
 
   return (
     <>
-      <Navbar />
 
       <Hero />
 
@@ -68,6 +67,8 @@ export default async function Home() {
       <Testimonials testimonials={testimonials} />
       
       <FAQ faqs={faqs} />
+
+       <CTA />
     </>
   );
 }

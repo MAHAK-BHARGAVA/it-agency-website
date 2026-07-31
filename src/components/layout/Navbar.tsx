@@ -47,13 +47,7 @@ export default function Navbar() {
   }, []);
 
   return (
-    <header
-      className={`fixed left-0 top-0 z-50 w-full transition-all duration-300 ${
-        sticky
-          ? "bg-[#0b0b0b] shadow-2xl"
-          : "bg-transparent"
-      }`}
-    >
+   <header className="sticky top-0 z-50 border-b border-white/10 bg-black/75 backdrop-blur-xl supports-[backdrop-filter]:bg-black/60">
       <Container className="flex h-28 items-center justify-between">
 
         <Link href="/">
