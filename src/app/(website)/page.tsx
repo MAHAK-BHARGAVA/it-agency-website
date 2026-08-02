@@ -46,32 +46,36 @@ import { getFAQs } from "@/repositories/faq.repository";
 
 export default async function Home() {
   const [services, portfolio, testimonials, faqs] = await Promise.all([
-  getServices(),
-  getPortfolio(),
-  getTestimonials(),
-  getFAQs(),
-]);
+    getServices(),
+    getPortfolio(),
+    getTestimonials(),
+    getFAQs(),
+  ]);
 
   return (
     <>
-
-      <Hero />
+      <Hero
+        services={services.map((service) => ({
+          id: service.id,
+          name: service.name,
+        }))}
+      />
 
       <About />
 
       <Services services={services} />
 
-       <TechStack />
+      <TechStack />
 
       <Portfolio portfolio={portfolio} />
 
       <Process />
 
       <Testimonials testimonials={testimonials} />
-      
+
       <FAQ faqs={faqs} />
 
-       <CTA />
+      <CTA />
     </>
   );
 }
