@@ -1,11 +1,11 @@
 -- DropForeignKey
-ALTER TABLE `servicecity` DROP FOREIGN KEY `ServiceCity_serviceId_fkey`;
+ALTER TABLE `ServiceCity` DROP FOREIGN KEY `ServiceCity_serviceId_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `serviceindustry` DROP FOREIGN KEY `ServiceIndustry_serviceId_fkey`;
+ALTER TABLE `ServiceIndustry` DROP FOREIGN KEY `ServiceIndustry_serviceId_fkey`;
 
 -- DropForeignKey
-ALTER TABLE `servicestate` DROP FOREIGN KEY `ServiceState_serviceId_fkey`;
+ALTER TABLE `ServiceState` DROP FOREIGN KEY `ServiceState_serviceId_fkey`;
 
 -- AddForeignKey
 ALTER TABLE `ServiceCity` ADD CONSTRAINT `ServiceCity_serviceId_fkey` FOREIGN KEY (`serviceId`) REFERENCES `Service`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

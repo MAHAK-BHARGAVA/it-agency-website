@@ -194,21 +194,106 @@ model User {
   password  String
   name      String?
   role      String   @default("admin")
+
+  refreshTokens  RefreshToken[]
+  assignedLeads  Lead[]         @relation("AssignedLeads")
+  leadActivities LeadActivity[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  refreshTokens RefreshToken[]
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  MEETING_SCHEDULED
+  PROPOSAL_SENT
+  NEGOTIATION
+  WON
+  LOST
+  SPAM
+}
+
+enum LeadPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum LeadActivityType {
+  LEAD_CREATED
+  STATUS_CHANGED
+  NOTE_ADDED
+  NOTE_UPDATED
+  CALL
+  EMAIL
+  WHATSAPP
+  MEETING
+  FOLLOW_UP
+  PROPOSAL_SENT
 }
 
 model Lead {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String
-  phone     String
-  service   Service? @relation(fields: [serviceId], references: [id],onDelete: SetNull)
-  serviceId Int?
-  city      String?
-  message   String   @db.Text
+  id                   Int          @id @default(autoincrement())
+  name                 String
+  email                String?
+  phone                String
+
+  serviceId            Int?
+  service              Service?     @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  city                 String?
+  message              String?      @db.Text
+  preferredStartTime   String?
+  source               String?      @default("website")
+
+  status               LeadStatus   @default(NEW)
+  priority             LeadPriority @default(MEDIUM)
+
+  notes                String?      @db.Text
+  estimatedValue       Decimal?     @db.Decimal(12, 2)
+  nextFollowUpAt       DateTime?
+  lostReason           String?
+
+ assignedToId Int?
+assignedTo   User? @relation("AssignedLeads", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  activities           LeadActivity[]
+
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @default(now()) @updatedAt
+
+  @@index([status])
+  @@index([serviceId])
+  @@index([assignedToId])
+  @@index([nextFollowUpAt])
+  @@index([createdAt])
+  @@map("leads")
+}
+
+model LeadActivity {
+  id Int @id @default(autoincrement())
+
+  leadId Int
+  lead   Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  type        LeadActivityType
+  title       String
+  description String?          @db.Text
+
+  oldStatus LeadStatus?
+  newStatus LeadStatus?
+
+  createdById Int?
+  createdBy   User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
+
+  @@index([leadId])
+  @@index([createdById])
+  @@index([createdAt])
 }
 
 model RefreshToken {
@@ -226,19 +311,25 @@ model SiteSetting {
 
   companyName String
 
-  logo String
+  logo      String
   whiteLogo String?
-  favicon String?
+  favicon   String?
 
-  phone String
-  email String
+  phone   String
+  email   String
   address String
 
-  facebook String?
+  facebook  String?
   instagram String?
-  linkedin String?
-  twitter String?
-  youtube String?
+  linkedin  String?
+  twitter   String?
+  youtube   String?
+
+  salesEmail   String?
+  seoEmail     String?
+  aiEmail      String?
+  supportEmail String?
+  mediaEmail   String?
 
   footerCopyright String?
 

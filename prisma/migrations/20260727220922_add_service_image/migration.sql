@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE `service` ADD COLUMN `image` VARCHAR(191) NULL;
+ALTER TABLE `Service` ADD COLUMN `image` VARCHAR(191) NULL;

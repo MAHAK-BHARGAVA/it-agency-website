@@ -16,7 +16,7 @@
 
 */
 -- AlterTable
-ALTER TABLE `sitesetting` DROP COLUMN `aboutDescription`,
+ALTER TABLE `SiteSetting` DROP COLUMN `aboutDescription`,
     DROP COLUMN `aboutExperience`,
     DROP COLUMN `aboutImage`,
     DROP COLUMN `aboutTitle`,

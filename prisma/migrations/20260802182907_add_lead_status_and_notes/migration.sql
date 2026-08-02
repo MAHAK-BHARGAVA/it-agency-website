@@ -1,0 +1,13 @@
+-- AlterTable
+ALTER TABLE `leads`
+  ADD COLUMN `status` ENUM(
+    'NEW',
+    'CONTACTED',
+    'MEETING_SCHEDULED',
+    'PROPOSAL_SENT',
+    'WON',
+    'LOST',
+    'SPAM'
+  ) NOT NULL DEFAULT 'NEW',
+  ADD COLUMN `notes` TEXT NULL,
+  ADD COLUMN `updatedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);

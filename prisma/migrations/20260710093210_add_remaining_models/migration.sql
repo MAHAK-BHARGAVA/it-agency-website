@@ -5,7 +5,7 @@
 
 */
 -- AlterTable
-ALTER TABLE `city` DROP COLUMN `state`,
+ALTER TABLE `City` DROP COLUMN `state`,
     ADD COLUMN `canonicalUrl` VARCHAR(191) NULL,
     ADD COLUMN `metaDescription` VARCHAR(191) NULL,
     ADD COLUMN `metaTitle` VARCHAR(191) NULL,
@@ -13,7 +13,7 @@ ALTER TABLE `city` DROP COLUMN `state`,
     ADD COLUMN `stateId` INTEGER NULL;
 
 -- AlterTable
-ALTER TABLE `service` ADD COLUMN `canonicalUrl` VARCHAR(191) NULL,
+ALTER TABLE `Service` ADD COLUMN `canonicalUrl` VARCHAR(191) NULL,
     ADD COLUMN `metaDescription` VARCHAR(191) NULL,
     ADD COLUMN `metaTitle` VARCHAR(191) NULL,
     ADD COLUMN `ogImage` VARCHAR(191) NULL;

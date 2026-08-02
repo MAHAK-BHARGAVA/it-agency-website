@@ -5,7 +5,7 @@
 
 */
 -- AlterTable
-ALTER TABLE `portfolio` ADD COLUMN `challenge` TEXT NULL,
+ALTER TABLE `Portfolio` ADD COLUMN `challenge` TEXT NULL,
     ADD COLUMN `process` TEXT NULL,
     ADD COLUMN `solution` TEXT NULL,
     ADD COLUMN `testimonialId` INTEGER NULL;
