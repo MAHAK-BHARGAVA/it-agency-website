@@ -1,16 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  Mail,
-  MessageCircle,
-  Phone,
-} from "lucide-react";
+import { ArrowLeft, Mail, MessageCircle, Phone } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import AdminCard from "@/components/admin/UI/AdminCard";
 import LeadStatusBadge from "@/components/admin/leads/LeadStatusBadge";
 import LeadUpdateForm from "@/components/admin/leads/LeadUpdateForm";
+import LeadActivityTimeline from "@/components/admin/leads/LeadActivityTimeline";
+import ScheduleFollowUpForm from "@/components/admin/leads/ScheduleFollowUpForm";
 
 type Props = {
   params: Promise<{
@@ -34,6 +31,24 @@ export default async function LeadDetailsPage({ params }: Props) {
       service: {
         select: {
           name: true,
+        },
+      },
+      activities: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          createdBy: {
+            select: {
+              name: true,
+              email: true,
+            },
+          },
+        },
+      },
+      followUps: {
+        orderBy: {
+          scheduledAt: "asc",
         },
       },
     },
@@ -115,10 +130,7 @@ export default async function LeadDetailsPage({ params }: Props) {
           <dl className="mt-6 grid gap-5 sm:grid-cols-2">
             <InfoItem label="Client name" value={lead.name} />
             <InfoItem label="Phone" value={lead.phone} />
-            <InfoItem
-              label="Email"
-              value={lead.email ?? "Not provided"}
-            />
+            <InfoItem label="Email" value={lead.email ?? "Not provided"} />
             <InfoItem
               label="Service"
               value={lead.service?.name ?? "Not selected"}
@@ -127,14 +139,8 @@ export default async function LeadDetailsPage({ params }: Props) {
               label="Preferred start"
               value={lead.preferredStartTime ?? "Not provided"}
             />
-            <InfoItem
-              label="Source"
-              value={lead.source ?? "Website"}
-            />
-            <InfoItem
-              label="City"
-              value={lead.city ?? "Not provided"}
-            />
+            <InfoItem label="Source" value={lead.source ?? "Website"} />
+            <InfoItem label="City" value={lead.city ?? "Not provided"} />
             <InfoItem
               label="Last updated"
               value={lead.updatedAt.toLocaleString("en-IN", {
@@ -166,26 +172,30 @@ export default async function LeadDetailsPage({ params }: Props) {
           currentNotes={lead.notes ?? ""}
         />
       </div>
+
+      <div className="mt-6">
+        <ScheduleFollowUpForm leadId={lead.id} />
+      </div>
+      
+      {/* Activity Timeline */}
+      <div className="mt-6">
+        <LeadActivityTimeline
+          activities={lead.activities}
+          leadCreatedAt={lead.createdAt}
+        />
+      </div>
     </main>
   );
 }
 
-function InfoItem({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) {
+function InfoItem({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <dt className="text-xs font-bold uppercase tracking-[0.12em] text-[#8b8998]">
         {label}
       </dt>
 
-      <dd className="mt-2 text-sm font-semibold text-[#1b1b23]">
-        {value}
-      </dd>
+      <dd className="mt-2 text-sm font-semibold text-[#1b1b23]">{value}</dd>
     </div>
   );
 }

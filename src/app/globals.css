@@ -88,3 +88,48 @@ h6 {
     animation: none;
   }
 }
+
+.crm-datepicker {
+  border: 1px solid #ddd9e8 !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+  font-family: var(--font-primary), sans-serif !important;
+  box-shadow: 0 24px 70px rgba(40, 35, 80, 0.16) !important;
+}
+
+.crm-datepicker .react-datepicker__header {
+  background: #f7f5ff;
+  border-bottom: 1px solid #e4e2f0;
+  padding-top: 16px;
+}
+
+.crm-datepicker .react-datepicker__current-month {
+  color: #1b1b23;
+  font-weight: 700;
+}
+
+.crm-datepicker .react-datepicker__day--selected,
+.crm-datepicker .react-datepicker__day--keyboard-selected {
+  background: #4648d4;
+  color: white;
+  border-radius: 8px;
+}
+
+.crm-datepicker .react-datepicker__day:hover {
+  border-radius: 8px;
+  background: #ece8ff;
+}
+
+.crm-datepicker .react-datepicker__time-container {
+  border-left: 1px solid #e4e2f0;
+}
+
+.crm-datepicker
+  .react-datepicker__time-container
+  .react-datepicker__time
+  .react-datepicker__time-box
+  ul.react-datepicker__time-list
+  li.react-datepicker__time-list-item--selected {
+  background: #4648d4;
+  color: white;
+}

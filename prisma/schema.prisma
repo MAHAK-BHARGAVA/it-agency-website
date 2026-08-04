@@ -198,6 +198,7 @@ model User {
   refreshTokens  RefreshToken[]
   assignedLeads  Lead[]         @relation("AssignedLeads")
   leadActivities LeadActivity[]
+  createdFollowUps LeadFollowUp[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -235,6 +236,12 @@ enum LeadActivityType {
   PROPOSAL_SENT
 }
 
+enum FollowUpStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
 model Lead {
   id                   Int          @id @default(autoincrement())
   name                 String
@@ -261,6 +268,7 @@ model Lead {
 assignedTo   User? @relation("AssignedLeads", fields: [assignedToId], references: [id], onDelete: SetNull)
 
   activities           LeadActivity[]
+  followUps            LeadFollowUp[]
 
   createdAt            DateTime     @default(now())
   updatedAt            DateTime     @default(now()) @updatedAt
@@ -294,6 +302,32 @@ model LeadActivity {
   @@index([leadId])
   @@index([createdById])
   @@index([createdAt])
+}
+
+model LeadFollowUp {
+  id Int @id @default(autoincrement())
+
+  leadId Int
+  lead   Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String? @db.Text
+
+  scheduledAt DateTime
+  status      FollowUpStatus @default(PENDING)
+
+  completedAt DateTime?
+
+  createdById Int?
+  createdBy   User? @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([leadId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([createdById])
 }
 
 model RefreshToken {

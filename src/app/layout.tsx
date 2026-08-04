@@ -1,5 +1,6 @@
 import "./globals.css";
 import { Manrope, Raleway } from "next/font/google";
+import "react-datepicker/dist/react-datepicker.css";
 
 const manrope = Manrope({
   subsets: ["latin"],

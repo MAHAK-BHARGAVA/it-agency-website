@@ -6,8 +6,10 @@ import { prisma } from "@/lib/prisma";
 const allowedStatuses = new Set<LeadStatus>([
   "NEW",
   "CONTACTED",
+  "QUALIFIED",
   "MEETING_SCHEDULED",
   "PROPOSAL_SENT",
+  "NEGOTIATION",
   "WON",
   "LOST",
   "SPAM",
@@ -62,16 +64,18 @@ export async function PATCH(
       );
     }
 
-    const existingLead = await prisma.lead.findUnique({
+    const currentLead = await prisma.lead.findUnique({
       where: {
         id: leadId,
       },
       select: {
         id: true,
+        status: true,
+        notes: true,
       },
     });
 
-    if (!existingLead) {
+    if (!currentLead) {
       return NextResponse.json(
         {
           success: false,
@@ -81,26 +85,64 @@ export async function PATCH(
       );
     }
 
-    const lead = await prisma.lead.update({
-      where: {
-        id: leadId,
-      },
-      data: {
-        status,
-        notes: notes || null,
-      },
-      select: {
-        id: true,
-        status: true,
-        notes: true,
-        updatedAt: true,
-      },
+    const oldNotes = currentLead.notes?.trim() ?? "";
+
+    const statusChanged = currentLead.status !== status;
+    const notesChanged = oldNotes !== notes;
+
+    const updatedLead = await prisma.$transaction(async (tx) => {
+      const lead = await tx.lead.update({
+        where: {
+          id: leadId,
+        },
+        data: {
+          status,
+          notes: notes || null,
+        },
+        select: {
+          id: true,
+          status: true,
+          notes: true,
+          updatedAt: true,
+        },
+      });
+
+      if (statusChanged) {
+        await tx.leadActivity.create({
+          data: {
+            leadId,
+            type: "STATUS_CHANGED",
+            title: "Lead status changed",
+            description: `${formatStatus(
+              currentLead.status,
+            )} → ${formatStatus(status)}`,
+            oldStatus: currentLead.status,
+            newStatus: status,
+          },
+        });
+      }
+
+      if (notesChanged) {
+        await tx.leadActivity.create({
+          data: {
+            leadId,
+            type: oldNotes ? "NOTE_UPDATED" : "NOTE_ADDED",
+            title: oldNotes
+              ? "Internal notes updated"
+              : "Internal notes added",
+            description:
+              notes || "Internal notes were cleared.",
+          },
+        });
+      }
+
+      return lead;
     });
 
     return NextResponse.json({
       success: true,
       message: "Lead updated successfully.",
-      lead,
+      lead: updatedLead,
     });
   } catch (error) {
     console.error("Lead update error:", error);
@@ -113,4 +155,15 @@ export async function PATCH(
       { status: 500 },
     );
   }
+}
+
+function formatStatus(status: LeadStatus): string {
+  return status
+    .toLowerCase()
+    .split("_")
+    .map(
+      (word) =>
+        word.charAt(0).toUpperCase() + word.slice(1),
+    )
+    .join(" ");
 }
