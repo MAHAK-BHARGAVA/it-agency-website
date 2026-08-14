@@ -8,6 +8,7 @@ import LeadStatusBadge from "@/components/admin/leads/LeadStatusBadge";
 import LeadUpdateForm from "@/components/admin/leads/LeadUpdateForm";
 import LeadActivityTimeline from "@/components/admin/leads/LeadActivityTimeline";
 import ScheduleFollowUpForm from "@/components/admin/leads/ScheduleFollowUpForm";
+import LeadFollowUpList from "@/components/admin/leads/LeadFollowUpList";
 
 type Props = {
   params: Promise<{
@@ -176,7 +177,12 @@ export default async function LeadDetailsPage({ params }: Props) {
       <div className="mt-6">
         <ScheduleFollowUpForm leadId={lead.id} />
       </div>
-      
+
+      {/* Scheduled Follow-ups */}
+      <div className="mt-6">
+        <LeadFollowUpList leadId={lead.id} followUps={lead.followUps} />
+      </div>
+
       {/* Activity Timeline */}
       <div className="mt-6">
         <LeadActivityTimeline
