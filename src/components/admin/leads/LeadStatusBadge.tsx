@@ -7,10 +7,17 @@ type Props = {
 const statusStyles: Record<LeadStatus, string> = {
   NEW: "border-blue-200 bg-blue-50 text-blue-700",
   CONTACTED: "border-violet-200 bg-violet-50 text-violet-700",
+  QUALIFIED: "border-cyan-200 bg-cyan-50 text-cyan-700",
+
   MEETING_SCHEDULED:
     "border-amber-200 bg-amber-50 text-amber-700",
+
   PROPOSAL_SENT:
     "border-orange-200 bg-orange-50 text-orange-700",
+
+  NEGOTIATION:
+    "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700",
+
   WON: "border-emerald-200 bg-emerald-50 text-emerald-700",
   LOST: "border-slate-200 bg-slate-100 text-slate-600",
   SPAM: "border-red-200 bg-red-50 text-red-700",
@@ -19,8 +26,10 @@ const statusStyles: Record<LeadStatus, string> = {
 const statusLabels: Record<LeadStatus, string> = {
   NEW: "New",
   CONTACTED: "Contacted",
+  QUALIFIED: "Qualified",
   MEETING_SCHEDULED: "Meeting Scheduled",
   PROPOSAL_SENT: "Proposal Sent",
+  NEGOTIATION: "Negotiation",
   WON: "Won",
   LOST: "Lost",
   SPAM: "Spam",

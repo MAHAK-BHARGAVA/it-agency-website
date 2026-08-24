@@ -1,10 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import {
-  Globe,
-  Building2,
-  FileText,
-  ImageIcon,
+  // Globe,
+  // Building2,
+  // FileText,
+  // ImageIcon,
   Sparkles,
   Bell,
   Briefcase,
@@ -13,38 +13,6 @@ import {
   Plus,
 } from "lucide-react";
 
-const navItems = [
-  {
-    label: "Dashboard",
-    icon: null,
-    href: "/admin",
-  },
-  {
-    label: "Geographic Targets",
-    icon: Globe,
-    href: "/admin/cities",
-  },
-  {
-    label: "Business Targets",
-    icon: Building2,
-    href: "/admin/business-targets",
-  },
-  {
-    label: "Content Library",
-    icon: FileText,
-    href: "/admin/content-library",
-  },
-  {
-    label: "Media",
-    icon: ImageIcon,
-    href: "/admin/portfolio",
-  },
-  {
-    label: "Optimization",
-    icon: Sparkles,
-    href: "/admin/faqs",
-  },
-];
 
 export default async function AdminDashboardPage() {
   // --------------------------------------------------
@@ -218,334 +186,272 @@ export default async function AdminDashboardPage() {
     },
   ];
 
-  return (
-    <div className="min-h-screen bg-[#fcf8ff] text-[#1b1b23]">
-      <div className="mx-auto flex min-h-screen w-full flex-col overflow-hidden lg:flex-row">
-        {/* ==================================================
-            SIDEBAR
-        ================================================== */}
+ return (
+  <div>
+    {/* PAGE HEADING */}
+    <div className="mb-8">
+      <p className="text-xs font-black uppercase tracking-[0.25em] text-lime-600">
+        Overview
+      </p>
 
-        <aside className="w-full border-b border-[#c7c4d7] bg-[#FCFBFF] px-4 py-6 lg:w-[280px] lg:border-b-0 lg:border-r lg:px-3 lg:py-5">
-          <div className="px-4 py-2">
-            <h2 className="text-[20px] font-bold tracking-[-0.2px] text-[#4648d4]">
-              SEO Engine
+      <h1 className="mt-2 text-3xl font-black tracking-tight text-black sm:text-4xl">
+        Dashboard
+      </h1>
+
+      <p className="mt-2 text-sm text-black/50">
+        Monitor enquiries, follow-ups and your sales pipeline.
+      </p>
+    </div>
+
+    {/* STAT CARDS */}
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      {stats.map((stat) => {
+        const Icon = stat.icon;
+
+        return (
+          <div
+            key={stat.label}
+            className="rounded-[24px] border border-black/5 bg-white p-6 shadow-sm"
+          >
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-bold text-black/45">
+                  {stat.label}
+                </p>
+
+                <p className="mt-4 text-4xl font-black text-black">
+                  {stat.value}
+                </p>
+              </div>
+
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-2xl ${stat.color}`}
+              >
+                <Icon size={21} />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+
+    {/* RECENT LEADS + QUICK ACTIONS */}
+    <div className="mt-8 grid grid-cols-1 gap-6 xl:grid-cols-3">
+      {/* Recent Leads */}
+      <div className="overflow-hidden rounded-[26px] border border-black/5 bg-white shadow-sm xl:col-span-2">
+        <div className="flex items-center justify-between border-b border-black/5 px-6 py-5">
+          <div>
+            <h2 className="text-xl font-black text-black">
+              Recent Leads
             </h2>
+
+            <p className="mt-1 text-sm text-black/40">
+              Latest website enquiries
+            </p>
           </div>
 
-          <nav className="mt-5 space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active = item.label === "Dashboard";
+          <Link
+            href="/admin/leads"
+            className="text-sm font-bold text-[#4648d4] transition hover:text-[#393bc7]"
+          >
+            View all
+          </Link>
+        </div>
 
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 text-[14px] font-semibold transition ${
-                    active
-                      ? "border-r-[4px] border-[#4F46E5] bg-[#ECE8FF] text-[#4F46E5]"
-                      : "text-[#464554] hover:bg-white/80"
-                  }`}
-                >
-                  {Icon ? (
-                    <Icon
-                      className={`h-5 w-5 ${
-                        active ? "text-[#4F46E5]" : "text-[#5B5B6B]"
-                      }`}
-                    />
-                  ) : (
-                    <span className="h-5 w-5 rounded bg-[#4F46E5]" />
-                  )}
+        {recentLeads.length === 0 ? (
+          <div className="px-6 py-14 text-center text-sm text-black/40">
+            No leads yet.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[650px]">
+              <thead>
+                <tr className="bg-[#f8f8f5] text-left">
+                  <th className="px-6 py-4 text-xs font-black uppercase tracking-wider text-black/40">
+                    Name
+                  </th>
 
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </aside>
+                  <th className="px-6 py-4 text-xs font-black uppercase tracking-wider text-black/40">
+                    Service
+                  </th>
 
-        {/* ==================================================
-            MAIN CONTENT
-        ================================================== */}
+                  <th className="px-6 py-4 text-xs font-black uppercase tracking-wider text-black/40">
+                    City
+                  </th>
 
-        <div className="flex-1">
-          {/* Header */}
+                  <th className="px-6 py-4 text-xs font-black uppercase tracking-wider text-black/40">
+                    Received
+                  </th>
 
-          <header className="border-b border-[#E4E2F0] bg-[#FCFBFF] px-8 py-5">
-            <div className="flex items-center justify-between">
-              <h1 className="text-[18px] font-semibold">Dashboard</h1>
+                  <th className="px-6 py-4 text-right text-xs font-black uppercase tracking-wider text-black/40">
+                    Action
+                  </th>
+                </tr>
+              </thead>
 
-              <div className="flex items-center gap-6">
-                <button
-                  type="button"
-                  className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E4E2F0] bg-white"
-                >
-                  <Bell className="h-4 w-4 text-[#6B7280]" />
-                </button>
-
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#4F46E5] text-sm font-semibold text-white">
-                  AD
-                </div>
-              </div>
-            </div>
-          </header>
-
-          {/* ==================================================
-              PAGE CONTENT
-          ================================================== */}
-
-          <main className="px-8 py-6">
-            {/* ==================================================
-                STAT CARDS
-            ================================================== */}
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              {stats.map((stat) => {
-                const Icon = stat.icon;
-
-                return (
-                  <div
-                    key={stat.label}
-                    className="rounded-2xl border border-[#E4E2F0] bg-white p-5"
+              <tbody>
+                {recentLeads.map((lead) => (
+                  <tr
+                    key={lead.id}
+                    className="border-t border-black/5 transition hover:bg-black/[0.015]"
                   >
-                    <div
-                      className={`mb-3 flex h-10 w-10 items-center justify-center rounded-lg ${stat.color}`}
-                    >
-                      <Icon size={20} />
-                    </div>
+                    <td className="px-6 py-5 font-bold text-black">
+                      {lead.name}
+                    </td>
 
-                    <p className="text-sm text-[#6B7280]">{stat.label}</p>
+                    <td className="px-6 py-5 text-sm text-black/60">
+                      {lead.service?.name ?? "—"}
+                    </td>
 
-                    <p className="text-2xl font-bold text-[#1b1b23]">
-                      {stat.value}
-                    </p>
-                  </div>
-                );
-              })}
-            </div>
+                    <td className="px-6 py-5 text-sm text-black/60">
+                      {lead.city ?? "—"}
+                    </td>
 
-            {/* ==================================================
-                RECENT LEADS + QUICK ACTIONS
-            ================================================== */}
+                    <td className="px-6 py-5 text-sm text-black/45">
+                      {lead.createdAt.toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
 
-            <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-3">
-              {/* ==============================
-                  RECENT LEADS
-              ============================== */}
-
-              <div className="rounded-2xl border border-[#E4E2F0] bg-white p-6 xl:col-span-2">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="font-semibold text-[#1b1b23]">Recent Leads</h2>
-
-                  <Link
-                    href="/admin/leads"
-                    className="text-sm font-semibold text-[#4648d4] transition hover:text-[#393bc7]"
-                  >
-                    View all
-                  </Link>
-                </div>
-
-                {recentLeads.length === 0 ? (
-                  <p className="text-sm text-[#6B7280]">
-                    No leads yet — they&apos;ll appear here once the contact
-                    form is submitted.
-                  </p>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[600px] text-sm">
-                      <thead>
-                        <tr className="border-b border-[#F1F0F7] text-left text-[#6B7280]">
-                          <th className="pb-2">Name</th>
-
-                          <th className="pb-2">Service</th>
-
-                          <th className="pb-2">City</th>
-
-                          <th className="pb-2">Received</th>
-
-                          <th className="pb-2 text-right">Action</th>
-                        </tr>
-                      </thead>
-
-                      <tbody>
-                        {recentLeads.map((lead) => (
-                          <tr
-                            key={lead.id}
-                            className="border-b border-[#F8F7FF] last:border-b-0"
-                          >
-                            <td className="py-3 font-medium text-[#1b1b23]">
-                              {lead.name}
-                            </td>
-
-                            <td className="py-3 text-[#6B7280]">
-                              {lead.service?.name || "—"}
-                            </td>
-
-                            <td className="py-3 text-[#6B7280]">
-                              {lead.city || "—"}
-                            </td>
-
-                            <td className="py-3 text-[#9ca3af]">
-                              {lead.createdAt.toLocaleDateString("en-IN", {
-                                day: "2-digit",
-                                month: "short",
-                                year: "numeric",
-                              })}
-                            </td>
-
-                            <td className="py-3 text-right">
-                              <Link
-                                href={`/admin/leads/${lead.id}`}
-                                className="text-xs font-semibold text-[#4648d4] hover:text-[#393bc7]"
-                              >
-                                View
-                              </Link>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-
-              {/* ==============================
-                  QUICK ACTIONS
-              ============================== */}
-
-              <div className="rounded-2xl bg-[#4648d4] p-6 text-white">
-                <h2 className="mb-4 font-semibold">Quick Actions</h2>
-
-                <div className="space-y-2">
-                  {/* Existing Actions */}
-
-                  <Link
-                    href="/admin/content-library"
-                    className="flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2.5 text-sm font-medium transition hover:bg-white/20"
-                  >
-                    <Plus size={16} />
-                    Generate a Page
-                  </Link>
-
-                  <Link
-                    href="/admin/business-targets"
-                    className="flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2.5 text-sm font-medium transition hover:bg-white/20"
-                  >
-                    <Plus size={16} />
-                    Add Service / Industry
-                  </Link>
-
-                  <Link
-                    href="/admin/cities"
-                    className="flex items-center gap-2 rounded-lg bg-white/10 px-4 py-2.5 text-sm font-medium transition hover:bg-white/20"
-                  >
-                    <Plus size={16} />
-                    Add City / State
-                  </Link>
-
-                  {/* Divider */}
-
-                  <div className="my-4 border-t border-white/20" />
-
-                  {/* Lead Management */}
-
-                  <p className="px-1 pb-1 text-xs font-semibold uppercase tracking-wider text-white/60">
-                    Lead Management
-                  </p>
-
-                  {/* View All Leads */}
-
-                  <Link
-                    href="/admin/leads"
-                    className="flex items-center justify-between rounded-lg bg-white/10 px-4 py-2.5 text-sm font-medium transition hover:bg-white/20"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Mail size={16} />
-                      View All Leads
-                    </span>
-
-                    <span className="rounded-full bg-white/15 px-2 py-0.5 text-xs">
-                      {totalLeadCount}
-                    </span>
-                  </Link>
-
-                  {/* Overdue Follow-ups */}
-
-                  <Link
-                    href="/admin/leads?followUp=overdue"
-                    className="flex items-center justify-between rounded-lg bg-white/10 px-4 py-2.5 text-sm font-medium transition hover:bg-white/20"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Bell size={16} />
-                      Overdue Follow-ups
-                    </span>
-
-                    <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-red-600">
-                      {overdueCount}
-                    </span>
-                  </Link>
-
-                  {/* Due Today */}
-
-                  <Link
-                    href="/admin/leads?followUp=due-today"
-                    className="flex items-center justify-between rounded-lg bg-white/10 px-4 py-2.5 text-sm font-medium transition hover:bg-white/20"
-                  >
-                    <span className="flex items-center gap-2">
-                      <Bell size={16} />
-                      Due Today
-                    </span>
-
-                    <span className="rounded-full bg-white px-2 py-0.5 text-xs font-bold text-amber-600">
-                      {dueTodayCount}
-                    </span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Lead Pipeline */}
-            <div className="mt-6 rounded-2xl border border-[#E4E2F0] bg-white p-6">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <h2 className="font-semibold text-[#1b1b23]">
-                    Lead Pipeline
-                  </h2>
-
-                  <p className="mt-1 text-sm text-[#6B7280]">
-                    Track leads through each stage of your sales process.
-                  </p>
-                </div>
-
-                <Link
-                  href="/admin/leads"
-                  className="text-sm font-semibold text-[#4648d4] transition hover:text-[#393bc7]"
-                >
-                  View all leads
-                </Link>
-              </div>
-
-              <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
-                {pipeline.map((item) => (
-                  <Link
-                    key={item.status}
-                    href={`/admin/leads?status=${item.status}`}
-                    className="group rounded-xl border border-[#E8E6F0] bg-[#FCFBFF] p-4 transition hover:border-[#6466e8] hover:bg-[#F7F5FF]"
-                  >
-                    <p className="text-xs font-semibold text-[#777584]">
-                      {item.label}
-                    </p>
-
-                    <p className="mt-2 text-2xl font-bold text-[#1b1b23] transition group-hover:text-[#4648d4]">
-                      {item.count}
-                    </p>
-                  </Link>
+                    <td className="px-6 py-5 text-right">
+                      <Link
+                        href={`/admin/leads/${lead.id}`}
+                        className="text-sm font-bold text-[#4648d4] hover:text-[#393bc7]"
+                      >
+                        View
+                      </Link>
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            </div>
-          </main>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="rounded-[26px] bg-[#111111] p-6 text-white shadow-sm">
+        <h2 className="text-xl font-black">
+          Quick Actions
+        </h2>
+
+        <p className="mt-1 text-sm text-white/45">
+          Jump to frequently used tools
+        </p>
+
+        <div className="mt-6 space-y-3">
+          <Link
+            href="/admin/content-library"
+            className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-bold transition hover:bg-lime-400 hover:text-black"
+          >
+            <Plus size={17} />
+            Generate a Page
+          </Link>
+
+          <Link
+            href="/admin/business-targets"
+            className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-bold transition hover:bg-lime-400 hover:text-black"
+          >
+            <Plus size={17} />
+            Add Service / Industry
+          </Link>
+
+          <Link
+            href="/admin/cities"
+            className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-bold transition hover:bg-lime-400 hover:text-black"
+          >
+            <MapPin size={17} />
+            Add City / State
+          </Link>
+
+          <div className="my-4 border-t border-white/10" />
+
+          <Link
+            href="/admin/leads"
+            className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-sm font-bold transition hover:bg-lime-400 hover:text-black"
+          >
+            <span className="flex items-center gap-3">
+              <Mail size={17} />
+              View All Leads
+            </span>
+
+            <span className="rounded-full bg-white/10 px-2 py-0.5 text-xs">
+              {totalLeadCount}
+            </span>
+          </Link>
+
+          <Link
+            href="/admin/leads?followUp=overdue"
+            className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-sm font-bold transition hover:bg-red-500/20 hover:text-red-300"
+          >
+            <span className="flex items-center gap-3">
+              <Bell size={17} />
+              Overdue Follow-ups
+            </span>
+
+            <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-xs text-red-300">
+              {overdueCount}
+            </span>
+          </Link>
+
+          <Link
+            href="/admin/leads?followUp=due-today"
+            className="flex items-center justify-between rounded-xl bg-white/5 px-4 py-3 text-sm font-bold transition hover:bg-amber-500/20 hover:text-amber-300"
+          >
+            <span className="flex items-center gap-3">
+              <Bell size={17} />
+              Due Today
+            </span>
+
+            <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-xs text-amber-300">
+              {dueTodayCount}
+            </span>
+          </Link>
         </div>
       </div>
     </div>
-  );
+
+    {/* LEAD PIPELINE */}
+    <div className="mt-8 rounded-[26px] border border-black/5 bg-white p-6 shadow-sm">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-xl font-black text-black">
+            Lead Pipeline
+          </h2>
+
+          <p className="mt-1 text-sm text-black/45">
+            Track leads through every stage of your sales process.
+          </p>
+        </div>
+
+        <Link
+          href="/admin/leads"
+          className="text-sm font-bold text-[#4648d4] transition hover:text-[#393bc7]"
+        >
+          View all leads
+        </Link>
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8">
+        {pipeline.map((item) => (
+          <Link
+            key={item.status}
+            href={`/admin/leads?status=${item.status}`}
+            className="group rounded-2xl border border-black/5 bg-[#f8f8f5] p-4 transition hover:-translate-y-1 hover:border-lime-400 hover:bg-white"
+          >
+            <p className="text-xs font-bold text-black/40">
+              {item.label}
+            </p>
+
+            <p className="mt-2 text-2xl font-black text-black transition group-hover:text-lime-600">
+              {item.count}
+            </p>
+          </Link>
+        ))}
+      </div>
+    </div>
+  </div>
+);
 }

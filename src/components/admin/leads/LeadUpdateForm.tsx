@@ -30,6 +30,8 @@ const statusOptions: {
   { value: "WON", label: "Won" },
   { value: "LOST", label: "Lost" },
   { value: "SPAM", label: "Spam" },
+  { value: "QUALIFIED", label: "Qualified" },
+  { value: "NEGOTIATION", label: "Negotiation" },
 ];
 
 export default function LeadUpdateForm({
