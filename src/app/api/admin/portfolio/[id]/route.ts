@@ -1,30 +1,81 @@
-import { prisma } from '@/lib/prisma'
-import { requireAuth } from '@/lib/requireAuth'
-import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/requireAuth";
+import { NextRequest, NextResponse } from "next/server";
 
-type Props = { params: Promise<{ id: string }> }
+type Props = {
+  params: Promise<{
+    id: string;
+  }>;
+};
 
-export async function GET(request: NextRequest, { params }: Props) {
-  const auth = await requireAuth(request)
-  if (!auth.authorized) return auth.response
-  const { id } = await params
+export async function GET(
+  request: NextRequest,
+  { params }: Props,
+) {
+  const auth = await requireAuth(request);
+
+  if (!auth.authorized) {
+    return auth.response;
+  }
+
+  const { id } = await params;
+
   const project = await prisma.portfolio.findUnique({
-    where: { id: Number(id) },
-    include: { services: true, industries: true },
-  })
-  if (!project) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-  return NextResponse.json(project)
+    where: {
+      id: Number(id),
+    },
+    include: {
+      services: true,
+      industries: true,
+    },
+  });
+
+  if (!project) {
+    return NextResponse.json(
+      {
+        error: "Not found",
+      },
+      {
+        status: 404,
+      },
+    );
+  }
+
+  return NextResponse.json(project);
 }
 
-export async function PUT(request: NextRequest, { params }: Props) {
-  const auth = await requireAuth(request)
-  if (!auth.authorized) return auth.response
-  const { id } = await params
-  const { projectName, slug, resultSummary, clientName, projectUrl, thumbnail, serviceIds ,
-    challenge, solution, process, testimonialId } = await request.json()
+export async function PUT(
+  request: NextRequest,
+  { params }: Props,
+) {
+  const auth = await requireAuth(request);
+
+  if (!auth.authorized) {
+    return auth.response;
+  }
+
+  const { id } = await params;
+
+  const {
+    projectName,
+    slug,
+    resultSummary,
+    clientName,
+    projectUrl,
+    thumbnail,
+    serviceIds,
+    industryIds,
+    challenge,
+    solution,
+    process,
+    testimonialId,
+  } = await request.json();
 
   const project = await prisma.portfolio.update({
-    where: { id: Number(id) },
+    where: {
+      id: Number(id),
+    },
+
     data: {
       projectName,
       slug,
@@ -32,20 +83,54 @@ export async function PUT(request: NextRequest, { params }: Props) {
       clientName,
       projectUrl,
       thumbnail,
-      challenge, 
-      solution, 
+      challenge,
+      solution,
       process,
-      testimonialId: testimonialId ? Number(testimonialId) : null,
-      services: serviceIds ? { set: serviceIds.map((sid: number) => ({ id: sid })) } : undefined,
+
+      testimonialId: testimonialId
+        ? Number(testimonialId)
+        : null,
+
+      services: serviceIds
+        ? {
+            set: serviceIds.map((sid: number) => ({
+              id: sid,
+            })),
+          }
+        : undefined,
+
+      industries: industryIds
+        ? {
+            set: industryIds.map((iid: number) => ({
+              id: iid,
+            })),
+          }
+        : undefined,
     },
-  })
-  return NextResponse.json(project)
+  });
+
+  return NextResponse.json(project);
 }
 
-export async function DELETE(request: NextRequest, { params }: Props) {
-  const auth = await requireAuth(request)
-  if (!auth.authorized) return auth.response
-  const { id } = await params
-  await prisma.portfolio.delete({ where: { id: Number(id) } })
-  return NextResponse.json({ success: true })
+export async function DELETE(
+  request: NextRequest,
+  { params }: Props,
+) {
+  const auth = await requireAuth(request);
+
+  if (!auth.authorized) {
+    return auth.response;
+  }
+
+  const { id } = await params;
+
+  await prisma.portfolio.delete({
+    where: {
+      id: Number(id),
+    },
+  });
+
+  return NextResponse.json({
+    success: true,
+  });
 }
