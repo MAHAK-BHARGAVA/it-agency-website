@@ -12,7 +12,33 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const auth = await requireAuth(request)
   if (!auth.authorized) return auth.response
-  const { title, slug, content, excerpt, category } = await request.json()
-  const blog = await prisma.blog.create({ data: { title, slug, content, excerpt, category } })
+  const { title, slug, content, excerpt, category,
+  featuredImage,
+  publishedAt,
+  metaTitle,
+  metaDescription, } = await request.json()
+  if (!title || !slug || !content) {
+  return NextResponse.json(
+    { error: "Title, slug and content are required" },
+    { status: 400 },
+  );
+}
+const blog = await prisma.blog.create({
+  data: {
+    title,
+    slug,
+    content,
+    excerpt: excerpt || null,
+    category: category || null,
+    featuredImage: featuredImage || null,
+
+    publishedAt: publishedAt
+      ? new Date(publishedAt)
+      : null,
+
+    metaTitle: metaTitle || null,
+    metaDescription: metaDescription || null,
+  },
+});
   return NextResponse.json(blog, { status: 201 })
 }

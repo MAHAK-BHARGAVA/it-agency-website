@@ -142,6 +142,16 @@ type MenuItem = {
   }[];
 };
 
+type SiteSettings = {
+  companyName: string;
+  logo: string;
+  whiteLogo: string | null;
+};
+
+type NavbarProps = {
+  settings: SiteSettings;
+};
+
 const menu: MenuItem[] = [
   {
     title: "Home",
@@ -170,16 +180,12 @@ const menu: MenuItem[] = [
   {
     title: "Portfolio",
     href: "/portfolio",
-    children: [
-      { label: "All Projects", href: "/portfolio" },
-    ],
+    children: [{ label: "All Projects", href: "/portfolio" }],
   },
   {
     title: "Blog",
     href: "/blog",
-    children: [
-      { label: "All Articles", href: "/blog" },
-    ],
+    children: [{ label: "All Articles", href: "/blog" }],
   },
   {
     title: "Contact",
@@ -187,19 +193,23 @@ const menu: MenuItem[] = [
   },
 ];
 
-export default function Navbar() {
+export default function Navbar({ settings }: NavbarProps) {
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl">
       <Container className="flex h-28 items-center justify-between">
         <Link href="/" aria-label="Go to homepage">
-          <Image
-            src="/assets/images/logo/01.svg"
-            alt="Agenio"
-            width={170}
-            height={48}
-            priority
-            className="h-10 w-auto"
-          />
+         <Image
+  src={
+    settings.whiteLogo?.trim() ||
+    settings.logo?.trim() ||
+    "/assets/images/logo/01.svg"
+  }
+  alt={settings.companyName || "ABC Technologies"}
+  width={170}
+  height={48}
+  priority
+  className="h-10 w-auto"
+/>
         </Link>
 
         <nav className="hidden xl:block" aria-label="Main navigation">

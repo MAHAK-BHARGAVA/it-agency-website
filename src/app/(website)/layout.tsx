@@ -7,6 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer/Footer";
 
 import { getFooterData } from "@/repositories/footer.repository";
+import { prisma } from "@/lib/prisma";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -23,7 +24,45 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const footerData = await getFooterData();
+  const [footerData, settings] = await Promise.all([
+    getFooterData(),
+
+    prisma.siteSetting.findUnique({
+      where: {
+        id: 1,
+      },
+    }),
+  ]);
+
+  const siteSettings =
+    settings ?? {
+      companyName: "ABC Technologies",
+
+      logo: "/assets/images/logo/01.svg",
+      whiteLogo: "/assets/images/logo/01.svg",
+      favicon: null,
+
+      phone: "",
+      email: "",
+      address: "",
+
+      facebook: null,
+      instagram: null,
+      linkedin: null,
+      twitter: null,
+      youtube: null,
+
+      salesEmail: null,
+      seoEmail: null,
+      aiEmail: null,
+      supportEmail: null,
+      mediaEmail: null,
+
+      footerCopyright: null,
+
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
   return (
     <html lang="en">
@@ -34,16 +73,19 @@ export default async function RootLayout({
           data={{
             "@context": "https://schema.org",
             "@type": "Organization",
-            name: "ABC Technologies",
+            name: siteSettings.companyName,
             url: process.env.NEXT_PUBLIC_SITE_URL,
           }}
         />
 
-        <Navbar />
+        <Navbar settings={siteSettings} />
 
         {children}
 
-        <Footer data={footerData} />
+        <Footer
+          data={footerData}
+          settings={siteSettings}
+        />
       </body>
     </html>
   );

@@ -18,14 +18,28 @@ export async function POST(request: NextRequest) {
   const auth = await requireAuth(request)
   if (!auth.authorized) return auth.response
 
-  const { name, slug, description } = await request.json()
+  const { name, slug, description ,
+  metaTitle,
+  metaDescription,
+  canonicalUrl,
+  ogImage,
+  image, } = await request.json()
 
   if (!name || !slug || !description) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
 
   const service = await prisma.service.create({
-    data: { name, slug, description },
+   data: {
+  name,
+  slug,
+  description,
+  metaTitle: metaTitle || null,
+  metaDescription: metaDescription || null,
+  canonicalUrl: canonicalUrl || null,
+  ogImage: ogImage || null,
+  image: image || null,
+},
   })
 
   return NextResponse.json(service, { status: 201 })

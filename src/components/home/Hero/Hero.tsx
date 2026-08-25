@@ -234,8 +234,20 @@ type ServiceOption = {
   name: string;
 };
 
+type HeroData = {
+  badge: string;
+  title: string;
+  description: string;
+  primaryButtonText: string;
+  primaryButtonLink: string;
+  secondaryButtonText: string | null;
+  secondaryButtonLink: string | null;
+  heroImage: string;
+};
+
 type Props = {
   services: ServiceOption[];
+  hero: HeroData;
 };
 
 const transitionBase = {
@@ -301,8 +313,11 @@ const staggerContainer = {
   },
 };
 
-export default function Hero({ services }: Props) {
-  const headingLines = ["Creative", "Digital", "Agency"];
+export default function Hero({
+  services,
+  hero,
+}: Props) {
+  const headingLines = hero.title.split(" ");
 
   return (
     <section className="relative min-h-screen overflow-hidden bg-[#080808] pt-[100px] text-white">
@@ -329,7 +344,7 @@ export default function Hero({ services }: Props) {
               className="inline-flex items-center rounded-full border border-lime-400 px-6 py-3"
             >
               <span className="text-xs font-bold uppercase tracking-[0.32em] text-lime-400 sm:text-sm">
-                Digital Agency
+                {hero.badge}
               </span>
             </motion.div>
 
@@ -352,8 +367,7 @@ export default function Hero({ services }: Props) {
               variants={fadeUp}
               className="mt-10 max-w-[620px] text-lg leading-8 text-white/70 sm:text-xl"
             >
-              We build premium digital experiences that combine strategy,
-              creativity and technology.
+              {hero.description}
             </motion.p>
 
             <motion.div
@@ -361,10 +375,10 @@ export default function Hero({ services }: Props) {
               className="mt-12 flex flex-wrap items-center gap-5"
             >
               <Link
-                href="/about"
+                href={hero.primaryButtonLink}
                 className="group inline-flex items-center gap-3 rounded-full bg-lime-400 px-8 py-5 text-sm font-bold uppercase text-black transition-all duration-300 hover:-translate-y-[5px] hover:shadow-[0_24px_70px_rgba(163,230,53,0.22)]"
               >
-                Discover More
+                {hero.primaryButtonText}
 
                 <ArrowUpRight
                   size={18}
@@ -373,10 +387,10 @@ export default function Hero({ services }: Props) {
               </Link>
 
               <Link
-                href="/portfolio"
+                href={hero.secondaryButtonLink || "/portfolio"}
                 className="group inline-flex items-center gap-3 rounded-full border border-white/20 px-8 py-5 text-sm font-bold uppercase text-white transition-all duration-300 hover:-translate-y-[5px] hover:border-lime-400 hover:text-lime-400 hover:shadow-[0_20px_50px_rgba(255,255,255,0.12)]"
               >
-                Our Work
+                {hero.secondaryButtonText || "Our Work"}
 
                 <ArrowUpRight
                   size={18}

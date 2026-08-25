@@ -20,18 +20,42 @@ export async function PUT(request: NextRequest, { params }: Props) {
   const auth = await requireAuth(request)
   if (!auth.authorized) return auth.response
   const { id } = await params
-  const { clientName, company, quote, rating, serviceIds } = await request.json()
+  const { clientName, company, quote, rating, photo, serviceIds, cityIds, industryIds } = await request.json()
 
-  const testimonial = await prisma.testimonial.update({
-    where: { id: Number(id) },
-    data: {
-      clientName,
-      company,
-      quote,
-      rating,
-      services: serviceIds ? { set: serviceIds.map((sid: number) => ({ id: sid })) } : undefined,
-    },
-  })
+ const testimonial = await prisma.testimonial.update({
+  where: { id: Number(id) },
+
+  data: {
+    clientName,
+    company,
+    quote,
+    rating,
+    photo,
+    services: serviceIds
+      ? {
+          set: serviceIds.map((sid: number) => ({
+            id: sid,
+          })),
+        }
+      : undefined,
+
+    cities: cityIds
+      ? {
+          set: cityIds.map((cid: number) => ({
+            id: cid,
+          })),
+        }
+      : undefined,
+
+    industries: industryIds
+      ? {
+          set: industryIds.map((iid: number) => ({
+            id: iid,
+          })),
+        }
+      : undefined,
+  },
+});
   return NextResponse.json(testimonial)
 }
 

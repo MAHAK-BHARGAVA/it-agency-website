@@ -17,11 +17,30 @@ export async function PUT(request: NextRequest, { params }: Props) {
   const auth = await requireAuth(request)
   if (!auth.authorized) return auth.response
   const { id } = await params
-  const { title, slug, content, excerpt, category, publishedAt } = await request.json()
-  const blog = await prisma.blog.update({
-    where: { id: Number(id) },
-    data: { title, slug, content, excerpt, category, publishedAt: publishedAt ? new Date(publishedAt) : null },
-  })
+  const { title, slug, content, excerpt, category, publishedAt ,
+  featuredImage,metaTitle,
+  metaDescription, } = await request.json()
+const blog = await prisma.blog.update({
+  where: {
+    id: Number(id),
+  },
+
+  data: {
+    title,
+    slug,
+    content,
+    excerpt: excerpt || null,
+    category: category || null,
+    featuredImage: featuredImage || null,
+
+    publishedAt: publishedAt
+      ? new Date(publishedAt)
+      : null,
+
+    metaTitle: metaTitle || null,
+    metaDescription: metaDescription || null,
+  },
+});
   return NextResponse.json(blog)
 }
 

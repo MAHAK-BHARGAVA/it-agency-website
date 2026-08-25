@@ -51,8 +51,8 @@ const menuItems = [
     icon: CircleHelp,
   },
   {
-    name: "Site Settings",
-    href: "/admin/settings",
+    name: "Site Content",
+    href: "/admin/site-content",
     icon: Settings,
   },
 ];

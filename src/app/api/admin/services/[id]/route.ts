@@ -22,11 +22,16 @@ export async function PUT(request: NextRequest, { params }: Props) {
   if (!auth.authorized) return auth.response
 
   const { id } = await params
-  const { name, slug, description } = await request.json()
+  const { name, slug, description,
+  metaTitle,
+  metaDescription,
+  canonicalUrl,
+  ogImage,
+  image, } = await request.json()
 
   const service = await prisma.service.update({
     where: { id: Number(id) },
-    data: { name, slug, description },
+    data: { name, slug, description, metaTitle: metaTitle || null, metaDescription: metaDescription || null, canonicalUrl: canonicalUrl || null, ogImage: ogImage || null, image: image || null },
   })
 
   return NextResponse.json(service)
