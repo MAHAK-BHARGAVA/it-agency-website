@@ -99,27 +99,35 @@ model ServiceCity {
 }
 
 model ServiceState {
-  id          Int      @id @default(autoincrement())
-  service     Service  @relation(fields: [serviceId], references: [id],onDelete: Cascade)
-  serviceId   Int
-  state       State    @relation(fields: [stateId], references: [id])
-  stateId     Int
-  heroHeading String?
-  introText   String?  @db.Text
-  createdAt   DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  service         Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId       Int
+  state           State    @relation(fields: [stateId], references: [id])
+  stateId         Int
+
+  metaTitle       String?
+  metaDescription String?
+  heroHeading     String?
+  introText       String?  @db.Text
+
+  createdAt       DateTime @default(now())
 
   @@unique([serviceId, stateId])
 }
 
 model ServiceIndustry {
-  id          Int      @id @default(autoincrement())
-  service     Service  @relation(fields: [serviceId], references: [id],onDelete: Cascade)
-  serviceId   Int
-  industry    Industry @relation(fields: [industryId], references: [id])
-  industryId  Int
-  heroHeading String?
-  introText   String?  @db.Text
-  createdAt   DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  service         Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId       Int
+  industry        Industry @relation(fields: [industryId], references: [id])
+  industryId      Int
+
+  metaTitle       String?
+  metaDescription String?
+  heroHeading     String?
+  introText       String?  @db.Text
+
+  createdAt       DateTime @default(now())
 
   @@unique([serviceId, industryId])
 }

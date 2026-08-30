@@ -1,46 +1,102 @@
-import { prisma } from '@/lib/prisma'
-import { requireAuth } from '@/lib/requireAuth'
-import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/requireAuth";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
-  const auth = await requireAuth(request)
-  if (!auth.authorized) return auth.response
+  const auth = await requireAuth(request);
+
+  if (!auth.authorized) return auth.response;
+
   const services = await prisma.service.findMany({
-    orderBy: { name: 'asc' },
-    include: {
-      _count: { select: { serviceCities: true, serviceStates: true, serviceIndustries: true } },
+    orderBy: {
+      name: "asc",
     },
-  })
-  return NextResponse.json(services)
+
+    include: {
+      _count: {
+        select: {
+          serviceCities: true,
+          serviceStates: true,
+          serviceIndustries: true,
+        },
+      },
+    },
+  });
+
+  return NextResponse.json(services);
 }
 
 export async function POST(request: NextRequest) {
-  const auth = await requireAuth(request)
-  if (!auth.authorized) return auth.response
+  const auth = await requireAuth(request);
 
-  const { name, slug, description ,
-  metaTitle,
-  metaDescription,
-  canonicalUrl,
-  ogImage,
-  image, } = await request.json()
+  if (!auth.authorized) return auth.response;
+
+  const {
+    name,
+    slug,
+    description,
+
+    metaTitle,
+    metaDescription,
+    canonicalUrl,
+    ogImage,
+    image,
+
+    cityIds = [],
+    stateIds = [],
+    industryIds = [],
+  } = await request.json();
 
   if (!name || !slug || !description) {
-    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    return NextResponse.json(
+      {
+        error: "Missing required fields",
+      },
+      {
+        status: 400,
+      },
+    );
   }
 
   const service = await prisma.service.create({
-   data: {
-  name,
-  slug,
-  description,
-  metaTitle: metaTitle || null,
-  metaDescription: metaDescription || null,
-  canonicalUrl: canonicalUrl || null,
-  ogImage: ogImage || null,
-  image: image || null,
-},
-  })
+    data: {
+      name,
+      slug,
+      description,
 
-  return NextResponse.json(service, { status: 201 })
+      metaTitle: metaTitle || null,
+      metaDescription: metaDescription || null,
+      canonicalUrl: canonicalUrl || null,
+      ogImage: ogImage || null,
+      image: image || null,
+
+      serviceCities: {
+        create: cityIds.map((cityId: number) => ({
+          cityId,
+        })),
+      },
+
+      serviceStates: {
+        create: stateIds.map((stateId: number) => ({
+          stateId,
+        })),
+      },
+
+      serviceIndustries: {
+        create: industryIds.map((industryId: number) => ({
+          industryId,
+        })),
+      },
+    },
+
+    include: {
+      serviceCities: true,
+      serviceStates: true,
+      serviceIndustries: true,
+    },
+  });
+
+  return NextResponse.json(service, {
+    status: 201,
+  });
 }

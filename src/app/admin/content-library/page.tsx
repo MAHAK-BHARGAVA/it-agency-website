@@ -1,309 +1,1213 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import {
-  Globe,
-  Building2,
-  FileText,
-  ImageIcon,
-  Sparkles,
-  ChevronDown,
-  MapPin,
-  Clock3,
-  Bell,
-} from 'lucide-react'
+import { useEffect, useMemo, useState } from "react";
 
-type Service = { id: number; name: string }
-type City = { id: number; name: string }
+type TargetType = "city" | "state" | "industry";
+type Mode = "list" | "add" | "edit";
 
-const navItems = [
-  { label: 'Geographic Targets', icon: Globe, href: '/admin/cities' },
-   { label: 'Business Targets', icon: Building2, href: '/admin/business-targets' },
-  { label: 'Content Library', icon: FileText, href: '/admin/content-library' },
-  { label: 'Media', icon: ImageIcon, href: '/admin/portfolio' },
-  { label: 'Optimization', icon: Sparkles, href: '/admin/faqs' },
-]
+type Service = {
+  id: number;
+  name: string;
+};
+
+type City = {
+  id: number;
+  name: string;
+  stateId?: number | null;
+};
+
+type State = {
+  id: number;
+  name: string;
+};
+
+type Industry = {
+  id: number;
+  name: string;
+};
+
+type ContentFields = {
+  metaTitle: string;
+  metaDescription: string;
+  heroHeading: string;
+  introText: string;
+};
+
+type Combination = {
+  id: number;
+  serviceId: number;
+
+  cityId?: number;
+  stateId?: number;
+  industryId?: number;
+
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  heroHeading?: string | null;
+  introText?: string | null;
+
+  service?: {
+    id: number;
+    name: string;
+  };
+
+  city?: {
+    id: number;
+    name: string;
+  };
+
+  state?: {
+    id: number;
+    name: string;
+  };
+
+  industry?: {
+    id: number;
+    name: string;
+  };
+};
+
+const emptyContent: ContentFields = {
+  metaTitle: "",
+  metaDescription: "",
+  heroHeading: "",
+  introText: "",
+};
 
 export default function ContentLibraryPage() {
-  const [services, setServices] = useState<Service[]>([])
-  const [cities, setCities] = useState<City[]>([])
-  const [serviceId, setServiceId] = useState<number | ''>('')
-  const [cityId, setCityId] = useState<number | ''>('')
+  const [targetType, setTargetType] =
+    useState<TargetType>("city");
 
-  const [pageTitle, setPageTitle] = useState('')
-  const [metaDescription, setMetaDescription] = useState('')
-  const [heroHeading, setHeroHeading] = useState('')
-  const [introText, setIntroText] = useState('')
-  const [includeFaqs, setIncludeFaqs] = useState(false)
-  const [includeTestimonials, setIncludeTestimonials] = useState(true)
+  const [mode, setMode] =
+    useState<Mode>("list");
 
-  const [status, setStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [services, setServices] =
+    useState<Service[]>([]);
+
+  const [cities, setCities] =
+    useState<City[]>([]);
+
+  const [states, setStates] =
+    useState<State[]>([]);
+
+  const [industries, setIndustries] =
+    useState<Industry[]>([]);
+
+  const [combinations, setCombinations] =
+    useState<Combination[]>([]);
+
+  const [serviceId, setServiceId] = useState("");
+  const [targetId, setTargetId] = useState("");
+
+  const [content, setContent] =
+    useState<ContentFields>(emptyContent);
+
+  const [editingId, setEditingId] =
+    useState<number | null>(null);
+
+  const [loading, setLoading] = useState(true);
+  const [loadingPages, setLoadingPages] =
+    useState(false);
+
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] =
+    useState<number | null>(null);
+
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  // -------------------------------------------------------
+  // Current API
+  // -------------------------------------------------------
+
+  const contentApi = useMemo(() => {
+    if (targetType === "city") {
+      return "/api/admin/service-city";
+    }
+
+    if (targetType === "state") {
+      return "/api/admin/service-state";
+    }
+
+    return "/api/admin/service-industry";
+  }, [targetType]);
+
+  // -------------------------------------------------------
+  // Target options
+  // -------------------------------------------------------
+
+  const targets = useMemo(() => {
+    if (targetType === "city") {
+      return cities;
+    }
+
+    if (targetType === "state") {
+      return states;
+    }
+
+    return industries;
+  }, [targetType, cities, states, industries]);
+
+  // -------------------------------------------------------
+  // Initial data
+  // -------------------------------------------------------
 
   useEffect(() => {
-    fetch('/api/admin/services').then((r) => r.json()).then(setServices)
-    fetch('/api/admin/cities').then((r) => r.json()).then(setCities)
-  }, [])
+    async function loadInitialData() {
+      try {
+        setLoading(true);
+        setError("");
 
-  const selectedService = services.find((s) => s.id === serviceId)
-  const selectedCity = cities.find((c) => c.id === cityId)
+        const [
+          servicesRes,
+          citiesRes,
+          statesRes,
+          industriesRes,
+        ] = await Promise.all([
+          fetch("/api/admin/services"),
+          fetch("/api/admin/cities"),
+          fetch("/api/admin/states"),
+          fetch("/api/admin/industries"),
+        ]);
 
-  async function handleGenerate() {
-    if (!serviceId || !cityId) {
-      alert('Please select both a Service and a City.')
-      return
+        if (
+          !servicesRes.ok ||
+          !citiesRes.ok ||
+          !statesRes.ok ||
+          !industriesRes.ok
+        ) {
+          throw new Error(
+            "Failed to load Content Library data."
+          );
+        }
+
+        const [
+          servicesData,
+          citiesData,
+          statesData,
+          industriesData,
+        ] = await Promise.all([
+          servicesRes.json(),
+          citiesRes.json(),
+          statesRes.json(),
+          industriesRes.json(),
+        ]);
+
+        setServices(
+          Array.isArray(servicesData)
+            ? servicesData
+            : []
+        );
+
+        setCities(
+          Array.isArray(citiesData)
+            ? citiesData
+            : []
+        );
+
+        setStates(
+          Array.isArray(statesData)
+            ? statesData
+            : []
+        );
+
+        setIndustries(
+          Array.isArray(industriesData)
+            ? industriesData
+            : []
+        );
+      } catch (err) {
+        console.error(err);
+
+        setError(
+          "Unable to load Content Library."
+        );
+      } finally {
+        setLoading(false);
+      }
     }
-    setStatus('saving')
-    const res = await fetch('/api/admin/service-city', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        serviceId,
-        cityId,
-        metaTitle: pageTitle,
-        metaDescription,
-        heroHeading,
-        introText,
-      }),
-    })
-    setStatus(res.ok ? 'saved' : 'error')
+
+    loadInitialData();
+  }, []);
+
+  // -------------------------------------------------------
+  // Load saved pages
+  // -------------------------------------------------------
+
+  async function loadPages() {
+    try {
+      setLoadingPages(true);
+      setError("");
+
+      const response = await fetch(contentApi);
+
+      if (!response.ok) {
+        throw new Error(
+          "Failed to load saved pages."
+        );
+      }
+
+      const data = await response.json();
+
+      setCombinations(
+        Array.isArray(data) ? data : []
+      );
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        "Unable to load saved pages."
+      );
+
+      setCombinations([]);
+    } finally {
+      setLoadingPages(false);
+    }
   }
 
-  return (
-    <div className="min-h-screen bg-[#fcf8ff] text-[#1b1b23]">
-      <div className="mx-auto flex min-h-screen w-full flex-col overflow-hidden lg:flex-row">
-        {/* Sidebar */}
-        <aside className="w-full border-b border-[#c7c4d7] bg-[#FCFBFF] px-4 py-6 lg:w-[280px] lg:border-b-0 lg:border-r lg:px-3 lg:py-5">
-          <div className="px-4 py-2">
-            <h2 className="text-[20px] font-bold tracking-[-0.2px] text-[#4648d4]">SEO Engine</h2>
-          </div>
-          <nav className="mt-5 space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon
-              const active = item.label === 'Content Library'
-              return (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 text-[14px] font-semibold transition ${
-                    active
-                      ? 'border-r-[4px] border-[#4F46E5] bg-[#ECE8FF] text-[#4F46E5]'
-                      : 'text-[#464554] hover:bg-white/80'
-                  }`}
-                >
-                  <Icon className={`h-5 w-5 ${active ? 'text-[#4F46E5]' : 'text-[#5B5B6B]'}`} />
-                  <span>{item.label}</span>
-                </Link>
-              )
-            })}
-          </nav>
-        </aside>
+  useEffect(() => {
+    loadPages();
+  }, [contentApi]);
 
-        {/* Main */}
-        <div className="flex-1">
-          <header className="border-b border-[#E4E2F0] bg-[#FCFBFF] px-8 py-5">
-            <div className="flex items-center justify-between">
-              <h1 className="text-[18px] font-semibold">Content Library</h1>
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2 text-sm text-[#6B7280]">
-                  <Clock3 className="h-4 w-4" />
-                  <span>Editing new page</span>
-                </div>
-                <button className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E4E2F0] bg-white">
-                  <Bell className="h-4 w-4 text-[#6B7280]" />
-                </button>
-              </div>
-            </div>
-          </header>
+  // -------------------------------------------------------
+  // Reset when changing tab
+  // -------------------------------------------------------
 
-          <main className="px-4 py-4 sm:px-6 lg:px-6 lg:py-6">
-            {/* Service + City selectors */}
-            <section className="rounded-2xl border border-[#E4E2F0] bg-white p-6 shadow-sm">
-              <div className="grid gap-6 md:grid-cols-2">
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#464554]">Select Service</label>
-                  <div className="relative">
-                    <select
-                      value={serviceId}
-                      onChange={(e) => setServiceId(e.target.value ? Number(e.target.value) : '')}
-                      className="w-full appearance-none rounded-xl border border-[#c7c4d7] bg-white px-4 py-3 text-[16px] font-medium text-[#1b1b23]"
-                    >
-                      <option value="">Choose a service...</option>
-                      {services.map((s) => (
-                        <option key={s.id} value={s.id}>{s.name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#6B7280]" />
-                  </div>
-                </div>
-                <div>
-                  <label className="mb-2 block text-sm font-semibold text-[#464554]">Select City</label>
-                  <div className="relative">
-                    <select
-                      value={cityId}
-                      onChange={(e) => setCityId(e.target.value ? Number(e.target.value) : '')}
-                      className="w-full appearance-none rounded-xl border border-[#c7c4d7] bg-white px-4 py-3 text-[16px] font-medium text-[#1b1b23]"
-                    >
-                      <option value="">Choose a city...</option>
-                      {cities.map((c) => (
-                        <option key={c.id} value={c.id}>{c.name}</option>
-                      ))}
-                    </select>
-                    <MapPin className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 text-[#6B7280]" />
-                  </div>
-                </div>
-              </div>
-            </section>
+  useEffect(() => {
+    setMode("list");
+    setEditingId(null);
+    setServiceId("");
+    setTargetId("");
+    setContent(emptyContent);
+    setMessage("");
+    setError("");
+  }, [targetType]);
 
-            <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-              {/* Content Parameters */}
-              <div className="rounded-[12px] border border-[#c7c4d7] bg-white p-5 shadow-sm sm:p-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EEF2FF]">
-                    <FileText className="h-5 w-5 text-[#4F46E5]" />
-                  </div>
-                  <h2 className="text-[14px] font-semibold text-[#1b1b23]">Content Parameters</h2>
-                </div>
+  // -------------------------------------------------------
+  // Form helpers
+  // -------------------------------------------------------
 
-                <div className="mt-6 space-y-5">
-                  <div>
-                    <div className="mb-2 flex items-center justify-between">
-                      <label className="text-sm font-semibold text-[#1b1b23]">Page Title</label>
-                      <span className="text-[10px] font-bold text-[#464554]">{pageTitle.length}/60</span>
-                    </div>
-                    <input
-                      value={pageTitle}
-                      onChange={(e) => setPageTitle(e.target.value)}
-                      maxLength={60}
-                      placeholder="e.g. Best Website Development in Jaipur"
-                      className="w-full rounded-[8px] border border-[#c7c4d7] bg-white px-4 py-3 text-base text-[#1b1b23] placeholder:text-[#9ca3af]"
-                    />
-                  </div>
+  function resetForm() {
+    setServiceId("");
+    setTargetId("");
+    setEditingId(null);
+    setContent(emptyContent);
+    setMessage("");
+    setError("");
+  }
 
-                  <div>
-                    <div className="mb-2 flex items-center justify-between">
-                      <label className="text-sm font-semibold text-[#1b1b23]">Meta Description</label>
-                      <span className="text-[10px] font-bold text-[#464554]">{metaDescription.length}/160</span>
-                    </div>
-                    <textarea
-                      value={metaDescription}
-                      onChange={(e) => setMetaDescription(e.target.value)}
-                      maxLength={160}
-                      placeholder="Describe the service and the value proposition..."
-                      className="min-h-[120px] w-full rounded-[8px] border border-[#c7c4d7] bg-white px-4 py-3 text-base leading-7 text-[#1b1b23] placeholder:text-[#9ca3af]"
-                    />
-                  </div>
+  function openAddForm() {
+    resetForm();
+    setMode("add");
+  }
 
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-[#1b1b23]">Hero Heading</label>
-                    <input
-                      value={heroHeading}
-                      onChange={(e) => setHeroHeading(e.target.value)}
-                      placeholder="Empowering Your Business in Jaipur"
-                      className="w-full rounded-[8px] border border-[#c7c4d7] bg-white px-4 py-3 text-base text-[#1b1b23] placeholder:text-[#9ca3af]"
-                    />
-                  </div>
+  function openEditForm(
+    item: Combination
+  ) {
+    setEditingId(item.id);
 
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-[#1b1b23]">Introduction Text</label>
-                    <textarea
-                      value={introText}
-                      onChange={(e) => setIntroText(e.target.value)}
-                      placeholder="Craft a compelling narrative for your local audience..."
-                      className="min-h-[120px] w-full rounded-[8px] border border-[#c7c4d7] bg-white px-4 py-3 text-base leading-7 text-[#1b1b23] placeholder:text-[#9ca3af]"
-                    />
-                  </div>
-                </div>
-              </div>
+    setServiceId(
+      String(item.serviceId)
+    );
 
-              {/* Right column */}
-              <div className="space-y-6">
-                <div className="rounded-[12px] border border-[#c7c4d7] bg-white p-5 shadow-sm sm:p-6">
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.7px] text-[#464554]">
-                    SERP snippet preview
-                  </h3>
-                  <div className="mt-4 rounded-[8px] border border-[#c7c4d7]/50 bg-[#f5f2fe] p-4">
-                    <p className="text-[11px] text-[#464554]">
-                      www.abctechnologies.com &gt; services
-                    </p>
-                    <h4 className="mt-3 text-[18px] font-medium text-[#1a0dab]">
-                      {pageTitle || `${selectedService?.name || 'Service'} in ${selectedCity?.name || 'City'}`}
-                    </h4>
-                    <p className="mt-2 text-sm leading-6 text-[#4d5156]">
-                      {metaDescription || 'Your meta description will appear here as you type.'}
-                    </p>
-                  </div>
-                </div>
+    if (targetType === "city") {
+      setTargetId(
+        String(item.cityId ?? "")
+      );
+    }
 
-                <div className="rounded-[12px] border border-[#c7c4d7] bg-white p-5 shadow-sm sm:p-6">
-                  <h3 className="text-[20px] font-semibold text-[#1b1b23]">Content Modules</h3>
-                  <div className="mt-4 space-y-3">
-                    <button
-                      onClick={() => setIncludeFaqs(!includeFaqs)}
-                      className="flex w-full items-center justify-between rounded-[8px] border border-[#c7c4d7]/40 bg-[#f5f2fe] px-4 py-3"
-                    >
-                      <div className="text-left">
-                        <p className="text-sm font-semibold text-[#1b1b23]">Include FAQs</p>
-                        <p className="text-[11px] text-[#464554]">Schema-ready questions</p>
-                      </div>
-                      <div className={`h-6 w-11 rounded-full transition ${includeFaqs ? 'bg-[#4648d4]' : 'bg-[#c7c4d7]'}`}>
-                        <div className={`mt-1 h-4 w-4 rounded-full bg-white transition ${includeFaqs ? 'ml-6' : 'ml-1'}`} />
-                      </div>
-                    </button>
+    if (targetType === "state") {
+      setTargetId(
+        String(item.stateId ?? "")
+      );
+    }
 
-                    <button
-                      onClick={() => setIncludeTestimonials(!includeTestimonials)}
-                      className="flex w-full items-center justify-between rounded-[8px] border border-[#c7c4d7]/40 bg-[#f5f2fe] px-4 py-3"
-                    >
-                      <div className="text-left">
-                        <p className="text-sm font-semibold text-[#1b1b23]">Include Testimonials</p>
-                        <p className="text-[11px] text-[#464554]">Social proof from clients</p>
-                      </div>
-                      <div className={`h-6 w-11 rounded-full transition ${includeTestimonials ? 'bg-[#4648d4]' : 'bg-[#c7c4d7]'}`}>
-                        <div className={`mt-1 h-4 w-4 rounded-full bg-white transition ${includeTestimonials ? 'ml-6' : 'ml-1'}`} />
-                      </div>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </section>
-          </main>
+    if (targetType === "industry") {
+      setTargetId(
+        String(item.industryId ?? "")
+      );
+    }
 
-          {/* Footer action bar */}
-          <div className="px-4 pb-6 sm:px-6 lg:px-6">
-            <div className="flex flex-col gap-4 rounded-[12px] border border-[#c7c4d7] bg-white/90 p-4 shadow-sm md:flex-row md:items-center md:justify-between lg:px-6">
-              <div>
-                <p className="text-sm font-semibold text-[#1b1b23]">
-                  Status: {status === 'saved' ? 'Published' : 'Draft'}
-                </p>
-                <p className="text-sm text-[#464554]">
-                  {status === 'saved' && selectedService && selectedCity
-                    ? `Live at /services/${selectedService.name.toLowerCase().replace(/\s+/g, '-')}/${selectedCity.name.toLowerCase()}`
-                    : 'Ready to Launch?'}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-3">
-                <button
-                  disabled={status === 'saving'}
-                  className="rounded-[8px] border border-[#c7c4d7] bg-white px-5 py-3 text-sm font-semibold text-[#1b1b23] hover:bg-[#f5f2fe]"
-                >
-                  Save Draft
-                </button>
-                <button
-                  onClick={handleGenerate}
-                  disabled={status === 'saving'}
-                  className="rounded-[8px] bg-[#4648d4] px-5 py-3 text-sm font-semibold text-white shadow-md hover:bg-[#383bcf] disabled:opacity-60"
-                >
-                  {status === 'saving' ? 'Generating...' : 'Generate Page'}
-                </button>
-              </div>
-            </div>
-            {status === 'error' && (
-              <p className="mt-2 text-sm text-red-600">Something went wrong — check the console.</p>
-            )}
-          </div>
+    setContent({
+      metaTitle: item.metaTitle ?? "",
+      metaDescription:
+        item.metaDescription ?? "",
+      heroHeading:
+        item.heroHeading ?? "",
+      introText:
+        item.introText ?? "",
+    });
+
+    setMessage("");
+    setError("");
+    setMode("edit");
+  }
+
+  function cancelForm() {
+    resetForm();
+    setMode("list");
+  }
+
+  function updateField(
+    field: keyof ContentFields,
+    value: string
+  ) {
+    setContent((current) => ({
+      ...current,
+      [field]: value,
+    }));
+  }
+
+  // -------------------------------------------------------
+  // Save / update
+  // -------------------------------------------------------
+
+  async function handleSave(
+    e: React.FormEvent
+  ) {
+    e.preventDefault();
+
+    if (!serviceId || !targetId) {
+      setError(
+        "Please select both a service and target."
+      );
+      return;
+    }
+
+    try {
+      setSaving(true);
+      setError("");
+      setMessage("");
+
+      const payload: Record<
+        string,
+        string | number
+      > = {
+        serviceId: Number(serviceId),
+        metaTitle: content.metaTitle,
+        metaDescription:
+          content.metaDescription,
+        heroHeading:
+          content.heroHeading,
+        introText:
+          content.introText,
+      };
+
+      if (targetType === "city") {
+        payload.cityId =
+          Number(targetId);
+      }
+
+      if (targetType === "state") {
+        payload.stateId =
+          Number(targetId);
+      }
+
+      if (
+        targetType === "industry"
+      ) {
+        payload.industryId =
+          Number(targetId);
+      }
+
+      const response = await fetch(
+        contentApi,
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data =
+        await response
+          .json()
+          .catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+            "Failed to save content."
+        );
+      }
+
+      await loadPages();
+
+      setMessage(
+        mode === "edit"
+          ? "Page updated successfully."
+          : "Page created successfully."
+      );
+
+      setTimeout(() => {
+        resetForm();
+        setMode("list");
+      }, 700);
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to save content."
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // -------------------------------------------------------
+  // Delete
+  // -------------------------------------------------------
+
+  async function handleDelete(
+    item: Combination
+  ) {
+    const targetName =
+      targetType === "city"
+        ? item.city?.name
+        : targetType === "state"
+        ? item.state?.name
+        : item.industry?.name;
+
+    const confirmed =
+      window.confirm(
+        `Delete ${
+          item.service?.name ||
+          "this service"
+        } + ${
+          targetName ||
+          "this target"
+        }?`
+      );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingId(item.id);
+      setError("");
+      setMessage("");
+
+      const payload: Record<
+        string,
+        number
+      > = {
+        serviceId:
+          Number(item.serviceId),
+      };
+
+      if (targetType === "city") {
+        payload.cityId =
+          Number(item.cityId);
+      }
+
+      if (targetType === "state") {
+        payload.stateId =
+          Number(item.stateId);
+      }
+
+      if (
+        targetType === "industry"
+      ) {
+        payload.industryId =
+          Number(item.industryId);
+      }
+
+      const response = await fetch(
+        contentApi,
+        {
+          method: "DELETE",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const data =
+        await response
+          .json()
+          .catch(() => null);
+
+      if (!response.ok) {
+        throw new Error(
+          data?.error ||
+            "Failed to delete page."
+        );
+      }
+
+      await loadPages();
+
+      setMessage(
+        "Page deleted successfully."
+      );
+    } catch (err) {
+      console.error(err);
+
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to delete page."
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
+  // -------------------------------------------------------
+  // Helpers
+  // -------------------------------------------------------
+
+  function getTargetName(
+    item: Combination
+  ) {
+    if (targetType === "city") {
+      return (
+        item.city?.name ||
+        "Unknown City"
+      );
+    }
+
+    if (targetType === "state") {
+      return (
+        item.state?.name ||
+        "Unknown State"
+      );
+    }
+
+    return (
+      item.industry?.name ||
+      "Unknown Industry"
+    );
+  }
+
+  const selectedService =
+    services.find(
+      (service) =>
+        service.id ===
+        Number(serviceId)
+    );
+
+  const selectedTarget =
+    targets.find(
+      (target) =>
+        target.id ===
+        Number(targetId)
+    );
+
+  // -------------------------------------------------------
+  // Loading
+  // -------------------------------------------------------
+
+  if (loading) {
+    return (
+      <div className="p-8">
+        <div className="rounded-2xl border border-gray-200 bg-white p-8">
+          <p className="text-sm text-gray-500">
+            Loading Content Library...
+          </p>
         </div>
       </div>
+    );
+  }
+
+  // -------------------------------------------------------
+  // UI
+  // -------------------------------------------------------
+
+  return (
+    <div className="p-6 lg:p-8">
+      <div className="mx-auto max-w-6xl">
+
+        {/* Header */}
+
+        <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+
+          <div>
+            <p className="mb-2 text-sm font-semibold uppercase tracking-[0.18em] text-gray-400">
+              SEO & Landing Pages
+            </p>
+
+            <h1 className="text-3xl font-bold text-gray-950">
+              Content Library
+            </h1>
+
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-500">
+              Manage targeted landing
+              pages across cities,
+              states and industries.
+            </p>
+          </div>
+
+          {mode === "list" && (
+            <button
+              type="button"
+              onClick={openAddForm}
+              className="rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800"
+            >
+              + Add New Page
+            </button>
+          )}
+
+        </div>
+
+        {/* Tabs */}
+
+        <div className="mb-8 inline-flex rounded-xl border border-gray-200 bg-white p-1 shadow-sm">
+
+          {(
+            [
+              "city",
+              "state",
+              "industry",
+            ] as TargetType[]
+          ).map((type) => (
+            <button
+              key={type}
+              type="button"
+              onClick={() =>
+                setTargetType(type)
+              }
+              className={`rounded-lg px-6 py-2.5 text-sm font-semibold capitalize transition ${
+                targetType === type
+                  ? "bg-black text-white shadow-sm"
+                  : "text-gray-500 hover:bg-gray-50 hover:text-black"
+              }`}
+            >
+              {type}
+            </button>
+          ))}
+
+        </div>
+
+        {/* Messages */}
+
+        {message && (
+          <div className="mb-6 rounded-xl border border-green-100 bg-green-50 px-4 py-3 text-sm font-medium text-green-700">
+            {message}
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+            {error}
+          </div>
+        )}
+
+        {/* LIST MODE */}
+
+        {mode === "list" && (
+          <div className="rounded-2xl border border-gray-200 bg-white shadow-sm">
+
+            <div className="border-b border-gray-100 px-6 py-5">
+
+              <div className="flex items-center justify-between gap-4">
+
+                <div>
+                  <h2 className="text-lg font-bold text-gray-950">
+                    Existing Pages
+                  </h2>
+
+                  <p className="mt-1 text-sm text-gray-500">
+                    {combinations.length}{" "}
+                    {targetType} landing
+                    page
+                    {combinations.length ===
+                    1
+                      ? ""
+                      : "s"}
+                  </p>
+                </div>
+
+              </div>
+
+            </div>
+
+            {loadingPages ? (
+              <div className="p-8 text-sm text-gray-500">
+                Loading pages...
+              </div>
+            ) : combinations.length ===
+              0 ? (
+              <div className="p-12 text-center">
+
+                <h3 className="text-lg font-bold text-gray-900">
+                  No pages yet
+                </h3>
+
+                <p className="mt-2 text-sm text-gray-500">
+                  Create your first{" "}
+                  {targetType} landing
+                  page.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={openAddForm}
+                  className="mt-5 rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white"
+                >
+                  + Add New Page
+                </button>
+
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+
+                {combinations.map(
+                  (item) => (
+                    <div
+                      key={item.id}
+                      className="flex flex-col gap-4 px-6 py-5 transition hover:bg-gray-50 md:flex-row md:items-center md:justify-between"
+                    >
+
+                      <div className="min-w-0">
+
+                        <div className="flex flex-wrap items-center gap-2">
+
+                          <h3 className="text-base font-bold text-gray-950">
+                            {item
+                              .service
+                              ?.name ||
+                              "Service"}
+                          </h3>
+
+                          <span className="text-gray-300">
+                            +
+                          </span>
+
+                          <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-700">
+                            {getTargetName(
+                              item
+                            )}
+                          </span>
+
+                        </div>
+
+                        <p className="mt-2 truncate text-sm font-medium text-gray-700">
+                          {item.metaTitle ||
+                            "No page title added"}
+                        </p>
+
+                        <p className="mt-1 line-clamp-1 max-w-2xl text-sm text-gray-400">
+                          {item.metaDescription ||
+                            "No meta description added"}
+                        </p>
+
+                      </div>
+
+                      <div className="flex shrink-0 items-center gap-2">
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openEditForm(
+                              item
+                            )
+                          }
+                          className="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-700 transition hover:border-gray-400 hover:text-black"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleDelete(
+                              item
+                            )
+                          }
+                          disabled={
+                            deletingId ===
+                            item.id
+                          }
+                          className="rounded-lg border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50 disabled:opacity-40"
+                        >
+                          {deletingId ===
+                          item.id
+                            ? "Deleting..."
+                            : "Delete"}
+                        </button>
+
+                      </div>
+
+                    </div>
+                  )
+                )}
+
+              </div>
+            )}
+
+          </div>
+        )}
+
+        {/* ADD / EDIT MODE */}
+
+        {(mode === "add" ||
+          mode === "edit") && (
+          <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_380px]">
+
+            <form
+              onSubmit={handleSave}
+              className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm lg:p-8"
+            >
+
+              <div className="mb-7 flex items-start justify-between gap-4">
+
+                <div>
+
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-gray-400">
+                    {mode === "edit"
+                      ? "Edit Page"
+                      : "New Page"}
+                  </p>
+
+                  <h2 className="mt-1 text-xl font-bold text-gray-950">
+                    {mode === "edit"
+                      ? "Update Targeted Page"
+                      : "Add Targeted Page"}
+                  </h2>
+
+                </div>
+
+                <button
+                  type="button"
+                  onClick={cancelForm}
+                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+
+              </div>
+
+              {/* Selectors */}
+
+              <div className="grid gap-5 md:grid-cols-2">
+
+                <div>
+
+                  <label className="mb-2 block text-sm font-semibold text-gray-700">
+                    Service
+                  </label>
+
+                  <select
+                    value={serviceId}
+                    disabled={
+                      mode === "edit"
+                    }
+                    onChange={(e) =>
+                      setServiceId(
+                        e.target.value
+                      )
+                    }
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                  >
+
+                    <option value="">
+                      Select service
+                    </option>
+
+                    {services.map(
+                      (service) => (
+                        <option
+                          key={
+                            service.id
+                          }
+                          value={
+                            service.id
+                          }
+                        >
+                          {
+                            service.name
+                          }
+                        </option>
+                      )
+                    )}
+
+                  </select>
+
+                </div>
+
+                <div>
+
+                  <label className="mb-2 block text-sm font-semibold text-gray-700 capitalize">
+                    {targetType}
+                  </label>
+
+                  <select
+                    value={targetId}
+                    disabled={
+                      mode === "edit"
+                    }
+                    onChange={(e) =>
+                      setTargetId(
+                        e.target.value
+                      )
+                    }
+                    className="w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-900 outline-none disabled:bg-gray-100 disabled:text-gray-500"
+                  >
+
+                    <option value="">
+                      Select{" "}
+                      {targetType}
+                    </option>
+
+                    {targets.map(
+                      (target) => (
+                        <option
+                          key={
+                            target.id
+                          }
+                          value={
+                            target.id
+                          }
+                        >
+                          {
+                            target.name
+                          }
+                        </option>
+                      )
+                    )}
+
+                  </select>
+
+                </div>
+
+              </div>
+
+              {/* SEO */}
+
+              <div className="mt-8 border-t border-gray-100 pt-8">
+
+                <h3 className="mb-5 text-base font-bold text-gray-950">
+                  SEO
+                </h3>
+
+                <div className="space-y-5">
+
+                  <div>
+
+                    <div className="mb-2 flex items-center justify-between">
+
+                      <label className="text-sm font-semibold text-gray-700">
+                        Page Title
+                      </label>
+
+                      <span className="text-xs text-gray-400">
+                        {
+                          content
+                            .metaTitle
+                            .length
+                        }
+                        /60
+                      </span>
+
+                    </div>
+
+                    <input
+                      type="text"
+                      value={
+                        content.metaTitle
+                      }
+                      onChange={(e) =>
+                        updateField(
+                          "metaTitle",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Web Development Company in Jaipur"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-gray-500"
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <div className="mb-2 flex items-center justify-between">
+
+                      <label className="text-sm font-semibold text-gray-700">
+                        Meta Description
+                      </label>
+
+                      <span className="text-xs text-gray-400">
+                        {
+                          content
+                            .metaDescription
+                            .length
+                        }
+                        /160
+                      </span>
+
+                    </div>
+
+                    <textarea
+                      rows={3}
+                      value={
+                        content.metaDescription
+                      }
+                      onChange={(e) =>
+                        updateField(
+                          "metaDescription",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Write a concise search description..."
+                      className="w-full resize-none rounded-xl border border-gray-200 px-4 py-3 text-sm leading-6 outline-none focus:border-gray-500"
+                    />
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* Content */}
+
+              <div className="mt-8 border-t border-gray-100 pt-8">
+
+                <h3 className="mb-5 text-base font-bold text-gray-950">
+                  Landing Page
+                  Content
+                </h3>
+
+                <div className="space-y-5">
+
+                  <div>
+
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Hero Heading
+                    </label>
+
+                    <input
+                      type="text"
+                      value={
+                        content.heroHeading
+                      }
+                      onChange={(e) =>
+                        updateField(
+                          "heroHeading",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Website Development Services in Jaipur"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-gray-500"
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label className="mb-2 block text-sm font-semibold text-gray-700">
+                      Introduction
+                      Text
+                    </label>
+
+                    <textarea
+                      rows={8}
+                      value={
+                        content.introText
+                      }
+                      onChange={(e) =>
+                        updateField(
+                          "introText",
+                          e.target.value
+                        )
+                      }
+                      placeholder="Write the introduction for this targeted landing page..."
+                      className="w-full resize-y rounded-xl border border-gray-200 px-4 py-3 text-sm leading-7 outline-none focus:border-gray-500"
+                    />
+
+                  </div>
+
+                </div>
+
+              </div>
+
+              {error && (
+                <div className="mt-6 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={
+                  saving ||
+                  !serviceId ||
+                  !targetId
+                }
+                className="mt-7 min-w-44 rounded-xl bg-black px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                {saving
+                  ? mode === "edit"
+                    ? "Updating..."
+                    : "Saving..."
+                  : mode === "edit"
+                  ? "Update Page"
+                  : "Save Page"}
+              </button>
+
+            </form>
+
+            {/* Preview */}
+
+            <div className="self-start xl:sticky xl:top-8">
+
+              <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-gray-400">
+                  Search Preview
+                </p>
+
+                <h2 className="mt-1 text-lg font-bold text-gray-950">
+                  Google SERP
+                </h2>
+
+                <div className="mt-5 rounded-xl border border-gray-100 bg-gray-50 p-5">
+
+                  <p className="mb-1 truncate text-sm text-gray-700">
+                    {selectedService?.name ||
+                      "Your Service"}
+                    {" › "}
+                    {selectedTarget?.name ||
+                      targetType}
+                  </p>
+
+                  <p className="text-xl font-medium leading-7 text-blue-700">
+                    {content.metaTitle ||
+                      `${
+                        selectedService?.name ||
+                        "Service"
+                      } in ${
+                        selectedTarget?.name ||
+                        "Target"
+                      }`}
+                  </p>
+
+                  <p className="mt-2 text-sm leading-6 text-gray-600">
+                    {content.metaDescription ||
+                      "Your meta description will appear here."}
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+      </div>
     </div>
-  )
+  );
 }

@@ -19,7 +19,9 @@ export async function PUT(request: NextRequest, { params }: Props) {
   const { id } = await params
   const { title, slug, content, excerpt, category, publishedAt ,
   featuredImage,metaTitle,
-  metaDescription, } = await request.json()
+  metaDescription, 
+  canonicalUrl,
+  ogImage, } = await request.json()
 const blog = await prisma.blog.update({
   where: {
     id: Number(id),
@@ -39,6 +41,8 @@ const blog = await prisma.blog.update({
 
     metaTitle: metaTitle || null,
     metaDescription: metaDescription || null,
+    canonicalUrl: canonicalUrl || null,
+    ogImage: ogImage || null,
   },
 });
   return NextResponse.json(blog)

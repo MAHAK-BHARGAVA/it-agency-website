@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
 import {
   LayoutDashboard,
   Inbox,
@@ -12,6 +13,9 @@ import {
   CircleHelp,
   Settings,
   LogOut,
+  Building2,
+  Globe2,
+  LibraryBig,
 } from "lucide-react";
 
 const menuItems = [
@@ -25,11 +29,36 @@ const menuItems = [
     href: "/admin/leads",
     icon: Inbox,
   },
+
+  // =========================
+  // SEO / BUSINESS STRUCTURE
+  // =========================
+
   {
     name: "Services",
     href: "/admin/services",
     icon: Wrench,
   },
+  {
+    name: "Business Targets",
+    href: "/admin/business-targets",
+    icon: Building2,
+  },
+  {
+    name: "Geographic Targets",
+    href: "/admin/cities",
+    icon: Globe2,
+  },
+  {
+    name: "Content Library",
+    href: "/admin/content-library",
+    icon: LibraryBig,
+  },
+
+  // =========================
+  // CONTENT MANAGEMENT
+  // =========================
+
   {
     name: "Portfolio",
     href: "/admin/portfolio",
@@ -63,7 +92,8 @@ export default function AdminSidebar() {
   return (
     <aside className="fixed left-0 top-0 z-40 hidden h-screen w-[270px] border-r border-white/10 bg-[#090909] lg:flex lg:flex-col">
       {/* Logo */}
-      <div className="flex h-24 items-center border-b border-white/10 px-8">
+
+      <div className="flex h-24 shrink-0 items-center border-b border-white/10 px-8">
         <Link href="/admin">
           <span className="text-xl font-black uppercase tracking-tight text-white">
             ABC
@@ -73,6 +103,7 @@ export default function AdminSidebar() {
       </div>
 
       {/* Navigation */}
+
       <nav className="flex-1 overflow-y-auto px-4 py-7">
         <p className="mb-4 px-4 text-[11px] font-bold uppercase tracking-[0.25em] text-white/30">
           Management
@@ -114,8 +145,12 @@ export default function AdminSidebar() {
       </nav>
 
       {/* Bottom */}
-      <div className="border-t border-white/10 p-4">
-        <button className="flex w-full items-center gap-4 rounded-2xl px-4 py-3.5 text-sm font-bold text-white/50 transition hover:bg-red-500/10 hover:text-red-400">
+
+      <div className="shrink-0 border-t border-white/10 p-4">
+        <button
+          type="button"
+          className="flex w-full items-center gap-4 rounded-2xl px-4 py-3.5 text-sm font-bold text-white/50 transition hover:bg-red-500/10 hover:text-red-400"
+        >
           <LogOut size={20} />
           Logout
         </button>

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Save, Star } from "lucide-react";
+import ImageUpload from "@/components/admin/uploads/ImageUpload";
 
 type RelatedItem = {
   id: number;
@@ -185,14 +186,7 @@ export default function TestimonialForm({ initialData }: Props) {
             />
           </Field>
 
-          <Field label="Client photo URL">
-            <input
-              value={photo}
-              onChange={(e) => setPhoto(e.target.value)}
-              className={inputClass}
-              placeholder="https://res.cloudinary.com/..."
-            />
-          </Field>
+          <ImageUpload label="Client Photo" value={photo} onChange={setPhoto} />
         </Section>
 
         <Section title="Testimonial">

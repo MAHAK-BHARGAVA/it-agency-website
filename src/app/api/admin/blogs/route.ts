@@ -16,7 +16,9 @@ export async function POST(request: NextRequest) {
   featuredImage,
   publishedAt,
   metaTitle,
-  metaDescription, } = await request.json()
+  metaDescription,
+  canonicalUrl,
+  ogImage, } = await request.json()
   if (!title || !slug || !content) {
   return NextResponse.json(
     { error: "Title, slug and content are required" },
@@ -38,6 +40,8 @@ const blog = await prisma.blog.create({
 
     metaTitle: metaTitle || null,
     metaDescription: metaDescription || null,
+    canonicalUrl: canonicalUrl || null,
+    ogImage: ogImage || null,
   },
 });
   return NextResponse.json(blog, { status: 201 })

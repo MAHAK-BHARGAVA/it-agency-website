@@ -355,7 +355,14 @@ export default async function AdminDashboardPage() {
             className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-bold transition hover:bg-lime-400 hover:text-black"
           >
             <Plus size={17} />
-            Add Service / Industry
+            Add Industry
+          </Link>
+          <Link
+            href="/admin/services"
+            className="flex items-center gap-3 rounded-xl bg-white/5 px-4 py-3 text-sm font-bold transition hover:bg-lime-400 hover:text-black"
+          >
+            <Plus size={17} />
+            Add Services
           </Link>
 
           <Link

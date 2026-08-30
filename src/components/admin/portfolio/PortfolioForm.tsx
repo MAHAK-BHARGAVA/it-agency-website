@@ -2,12 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ExternalLink,
-  ImageIcon,
-  Loader2,
-  Save,
-} from "lucide-react";
+import { ExternalLink, ImageIcon, Loader2, Save } from "lucide-react";
+import ImageUpload from "@/components/admin/uploads/ImageUpload";
 
 type Service = {
   id: number;
@@ -45,9 +41,7 @@ type Props = {
   initialData?: PortfolioInitialData;
 };
 
-export default function PortfolioForm({
-  initialData,
-}: Props) {
+export default function PortfolioForm({ initialData }: Props) {
   const router = useRouter();
 
   const editing = Boolean(initialData?.id);
@@ -64,48 +58,33 @@ export default function PortfolioForm({
   );
 
   const [slug, setSlug] = useState(initialData?.slug ?? "");
-  const [clientName, setClientName] = useState(
-    initialData?.clientName ?? "",
-  );
+  const [clientName, setClientName] = useState(initialData?.clientName ?? "");
 
-  const [projectUrl, setProjectUrl] = useState(
-    initialData?.projectUrl ?? "",
-  );
+  const [projectUrl, setProjectUrl] = useState(initialData?.projectUrl ?? "");
 
-  const [thumbnail, setThumbnail] = useState(
-    initialData?.thumbnail ?? "",
-  );
+  const [thumbnail, setThumbnail] = useState(initialData?.thumbnail ?? "");
 
   const [resultSummary, setResultSummary] = useState(
     initialData?.resultSummary ?? "",
   );
 
-  const [challenge, setChallenge] = useState(
-    initialData?.challenge ?? "",
-  );
+  const [challenge, setChallenge] = useState(initialData?.challenge ?? "");
 
-  const [solution, setSolution] = useState(
-    initialData?.solution ?? "",
-  );
+  const [solution, setSolution] = useState(initialData?.solution ?? "");
 
-  const [process, setProcess] = useState(
-    initialData?.process ?? "",
-  );
+  const [process, setProcess] = useState(initialData?.process ?? "");
 
   const [testimonialId, setTestimonialId] = useState(
-    initialData?.testimonialId
-      ? String(initialData.testimonialId)
-      : "",
+    initialData?.testimonialId ? String(initialData.testimonialId) : "",
   );
 
   const [selectedServiceIds, setSelectedServiceIds] = useState<number[]>(
     initialData?.services?.map((service) => service.id) ?? [],
   );
 
-  const [selectedIndustryIds, setSelectedIndustryIds] =
-    useState<number[]>(
-      initialData?.industries?.map((industry) => industry.id) ?? [],
-    );
+  const [selectedIndustryIds, setSelectedIndustryIds] = useState<number[]>(
+    initialData?.industries?.map((industry) => industry.id) ?? [],
+  );
 
   const [error, setError] = useState("");
 
@@ -117,15 +96,12 @@ export default function PortfolioForm({
     try {
       setLoadingOptions(true);
 
-      const [
-        servicesResponse,
-        industriesResponse,
-        testimonialsResponse,
-      ] = await Promise.all([
-        fetch("/api/admin/services"),
-        fetch("/api/admin/industries"),
-        fetch("/api/admin/testimonials"),
-      ]);
+      const [servicesResponse, industriesResponse, testimonialsResponse] =
+        await Promise.all([
+          fetch("/api/admin/services"),
+          fetch("/api/admin/industries"),
+          fetch("/api/admin/testimonials"),
+        ]);
 
       if (
         !servicesResponse.ok ||
@@ -135,24 +111,19 @@ export default function PortfolioForm({
         throw new Error("Unable to load form options.");
       }
 
-      const [
-        servicesData,
-        industriesData,
-        testimonialsData,
-      ] = await Promise.all([
-        servicesResponse.json(),
-        industriesResponse.json(),
-        testimonialsResponse.json(),
-      ]);
+      const [servicesData, industriesData, testimonialsData] =
+        await Promise.all([
+          servicesResponse.json(),
+          industriesResponse.json(),
+          testimonialsResponse.json(),
+        ]);
 
       setServices(servicesData);
       setIndustries(industriesData);
       setTestimonials(testimonialsData);
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to load form options.",
+        err instanceof Error ? err.message : "Unable to load form options.",
       );
     } finally {
       setLoadingOptions(false);
@@ -197,9 +168,7 @@ export default function PortfolioForm({
     return `/portfolio/${slug}`;
   }, [slug]);
 
-  async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>,
-  ) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!projectName.trim()) {
@@ -250,9 +219,7 @@ export default function PortfolioForm({
 
           process: process.trim() || null,
 
-          testimonialId: testimonialId
-            ? Number(testimonialId)
-            : null,
+          testimonialId: testimonialId ? Number(testimonialId) : null,
 
           serviceIds: selectedServiceIds,
 
@@ -264,20 +231,14 @@ export default function PortfolioForm({
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            data.error ||
-            "Unable to save portfolio project.",
+          data.message || data.error || "Unable to save portfolio project.",
         );
       }
 
       router.push("/admin/portfolio");
       router.refresh();
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to save project.",
-      );
+      setError(err instanceof Error ? err.message : "Unable to save project.");
     } finally {
       setSaving(false);
     }
@@ -318,9 +279,7 @@ export default function PortfolioForm({
             <FormField label="Slug" required>
               <input
                 value={slug}
-                onChange={(event) =>
-                  setSlug(generateSlug(event.target.value))
-                }
+                onChange={(event) => setSlug(generateSlug(event.target.value))}
                 required
                 className={inputClass}
                 placeholder="coitonic"
@@ -330,9 +289,7 @@ export default function PortfolioForm({
             <FormField label="Client name">
               <input
                 value={clientName}
-                onChange={(event) =>
-                  setClientName(event.target.value)
-                }
+                onChange={(event) => setClientName(event.target.value)}
                 className={inputClass}
                 placeholder="Coitonic"
               />
@@ -341,9 +298,7 @@ export default function PortfolioForm({
             <FormField label="Live project URL">
               <input
                 value={projectUrl}
-                onChange={(event) =>
-                  setProjectUrl(event.target.value)
-                }
+                onChange={(event) => setProjectUrl(event.target.value)}
                 type="url"
                 className={inputClass}
                 placeholder="https://example.com"
@@ -351,30 +306,16 @@ export default function PortfolioForm({
             </FormField>
           </div>
 
-          <FormField label="Thumbnail URL">
-            <div className="relative">
-              <ImageIcon
-                size={17}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-black/35"
-              />
-
-              <input
-                value={thumbnail}
-                onChange={(event) =>
-                  setThumbnail(event.target.value)
-                }
-                className={`${inputClass} pl-11`}
-                placeholder="https://res.cloudinary.com/..."
-              />
-            </div>
-          </FormField>
+          <ImageUpload
+            label="Project Thumbnail"
+            value={thumbnail}
+            onChange={setThumbnail}
+          />
 
           <FormField label="Result summary" required>
             <textarea
               value={resultSummary}
-              onChange={(event) =>
-                setResultSummary(event.target.value)
-              }
+              onChange={(event) => setResultSummary(event.target.value)}
               required
               className={textareaClass}
               placeholder="Describe the project's outcome and impact..."
@@ -390,9 +331,7 @@ export default function PortfolioForm({
           <FormField label="Challenge">
             <textarea
               value={challenge}
-              onChange={(event) =>
-                setChallenge(event.target.value)
-              }
+              onChange={(event) => setChallenge(event.target.value)}
               className={textareaClass}
               placeholder="What problem was the client facing?"
             />
@@ -401,9 +340,7 @@ export default function PortfolioForm({
           <FormField label="Solution">
             <textarea
               value={solution}
-              onChange={(event) =>
-                setSolution(event.target.value)
-              }
+              onChange={(event) => setSolution(event.target.value)}
               className={textareaClass}
               placeholder="How did your team solve the problem?"
             />
@@ -412,9 +349,7 @@ export default function PortfolioForm({
           <FormField label="Process">
             <textarea
               value={process}
-              onChange={(event) =>
-                setProcess(event.target.value)
-              }
+              onChange={(event) => setProcess(event.target.value)}
               className={textareaClass}
               placeholder="Explain the development/design process..."
             />
@@ -425,10 +360,7 @@ export default function PortfolioForm({
       {/* Right column */}
       <div className="space-y-7">
         {/* Preview */}
-        <Section
-          title="Preview"
-          description="Quick project preview."
-        >
+        <Section title="Preview" description="Quick project preview.">
           <div className="overflow-hidden rounded-2xl border border-black/5 bg-[#fafaf7]">
             <div className="aspect-[16/10] bg-black/5">
               {thumbnail ? (
@@ -494,22 +426,15 @@ export default function PortfolioForm({
         >
           <select
             value={testimonialId}
-            onChange={(event) =>
-              setTestimonialId(event.target.value)
-            }
+            onChange={(event) => setTestimonialId(event.target.value)}
             className={inputClass}
           >
             <option value="">No testimonial</option>
 
             {testimonials.map((testimonial) => (
-              <option
-                key={testimonial.id}
-                value={testimonial.id}
-              >
+              <option key={testimonial.id} value={testimonial.id}>
                 {testimonial.clientName}
-                {testimonial.company
-                  ? ` — ${testimonial.company}`
-                  : ""}
+                {testimonial.company ? ` — ${testimonial.company}` : ""}
               </option>
             ))}
           </select>
@@ -528,10 +453,7 @@ export default function PortfolioForm({
         >
           {saving ? (
             <>
-              <Loader2
-                size={17}
-                className="animate-spin"
-              />
+              <Loader2 size={17} className="animate-spin" />
               Saving...
             </>
           ) : (
@@ -557,17 +479,11 @@ function Section({
 }) {
   return (
     <section className="rounded-[24px] border border-black/5 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-black text-black">
-        {title}
-      </h2>
+      <h2 className="text-lg font-black text-black">{title}</h2>
 
-      <p className="mt-1 text-sm text-black/40">
-        {description}
-      </p>
+      <p className="mt-1 text-sm text-black/40">{description}</p>
 
-      <div className="mt-6 space-y-5">
-        {children}
-      </div>
+      <div className="mt-6 space-y-5">{children}</div>
     </section>
   );
 }
@@ -586,9 +502,7 @@ function FormField({
       <label className="mb-2 block text-sm font-bold text-[#1b1b23]">
         {label}
 
-        {required && (
-          <span className="ml-1 text-red-500">*</span>
-        )}
+        {required && <span className="ml-1 text-red-500">*</span>}
       </label>
 
       {children}
@@ -609,11 +523,7 @@ function CheckList({
   onToggle: (id: number) => void;
 }) {
   if (items.length === 0) {
-    return (
-      <p className="text-sm text-black/40">
-        No options available.
-      </p>
-    );
+    return <p className="text-sm text-black/40">No options available.</p>;
   }
 
   return (
@@ -637,9 +547,7 @@ function CheckList({
               className="h-4 w-4 accent-lime-500"
             />
 
-            <span className="text-sm font-bold text-black/65">
-              {item.name}
-            </span>
+            <span className="text-sm font-bold text-black/65">{item.name}</span>
           </label>
         );
       })}

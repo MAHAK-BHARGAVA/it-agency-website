@@ -11,6 +11,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import ImageUpload from "@/components/admin/uploads/ImageUpload";
 
 type Industry = {
   id: number;
@@ -67,16 +68,13 @@ export default function BusinessTargetsPage() {
 
   const [showModal, setShowModal] = useState(false);
 
-  const [form, setForm] =
-    useState<FormState>(emptyForm);
+  const [form, setForm] = useState<FormState>(emptyForm);
 
   const [saving, setSaving] = useState(false);
 
-  const [editingId, setEditingId] =
-    useState<number | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
 
-  const [openMenu, setOpenMenu] =
-    useState<number | null>(null);
+  const [openMenu, setOpenMenu] = useState<number | null>(null);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -88,17 +86,13 @@ export default function BusinessTargetsPage() {
       setLoading(true);
       setError("");
 
-      const response = await fetch(
-        "/api/admin/industries",
-      );
+      const response = await fetch("/api/admin/industries");
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            data.error ||
-            "Unable to load industries.",
+          data.message || data.error || "Unable to load industries.",
         );
       }
 
@@ -130,25 +124,19 @@ export default function BusinessTargetsPage() {
 
   /* ================= EDIT ================= */
 
-  async function openIndustryEdit(
-    industry: Industry,
-  ) {
+  async function openIndustryEdit(industry: Industry) {
     setEditingId(industry.id);
     setOpenMenu(null);
     setError("");
 
     try {
-      const response = await fetch(
-        `/api/admin/industries/${industry.id}`,
-      );
+      const response = await fetch(`/api/admin/industries/${industry.id}`);
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            data.error ||
-            "Unable to load industry.",
+          data.message || data.error || "Unable to load industry.",
         );
       }
 
@@ -158,10 +146,8 @@ export default function BusinessTargetsPage() {
         description: data.description ?? "",
 
         metaTitle: data.metaTitle ?? "",
-        metaDescription:
-          data.metaDescription ?? "",
-        canonicalUrl:
-          data.canonicalUrl ?? "",
+        metaDescription: data.metaDescription ?? "",
+        canonicalUrl: data.canonicalUrl ?? "",
         ogImage: data.ogImage ?? "",
       });
 
@@ -241,17 +227,13 @@ export default function BusinessTargetsPage() {
           slug: form.slug.trim(),
           description: form.description.trim(),
 
-          metaTitle:
-            form.metaTitle.trim() || null,
+          metaTitle: form.metaTitle.trim() || null,
 
-          metaDescription:
-            form.metaDescription.trim() || null,
+          metaDescription: form.metaDescription.trim() || null,
 
-          canonicalUrl:
-            form.canonicalUrl.trim() || null,
+          canonicalUrl: form.canonicalUrl.trim() || null,
 
-          ogImage:
-            form.ogImage.trim() || null,
+          ogImage: form.ogImage.trim() || null,
         }),
       });
 
@@ -261,9 +243,7 @@ export default function BusinessTargetsPage() {
         throw new Error(
           data.message ||
             data.error ||
-            `Unable to ${
-              editingId ? "update" : "create"
-            } industry.`,
+            `Unable to ${editingId ? "update" : "create"} industry.`,
         );
       }
 
@@ -296,20 +276,15 @@ export default function BusinessTargetsPage() {
       setError("");
       setOpenMenu(null);
 
-      const response = await fetch(
-        `/api/admin/industries/${id}`,
-        {
-          method: "DELETE",
-        },
-      );
+      const response = await fetch(`/api/admin/industries/${id}`, {
+        method: "DELETE",
+      });
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            data.error ||
-            "Unable to delete industry.",
+          data.message || data.error || "Unable to delete industry.",
         );
       }
 
@@ -325,23 +300,15 @@ export default function BusinessTargetsPage() {
 
   /* ================= SEARCH ================= */
 
-  const normalizedSearch =
-    search.trim().toLowerCase();
+  const normalizedSearch = search.trim().toLowerCase();
 
-  const filteredIndustries =
-    industries.filter((industry) => {
-      return (
-        industry.name
-          .toLowerCase()
-          .includes(normalizedSearch) ||
-        industry.slug
-          .toLowerCase()
-          .includes(normalizedSearch) ||
-        industry.description
-          .toLowerCase()
-          .includes(normalizedSearch)
-      );
-    });
+  const filteredIndustries = industries.filter((industry) => {
+    return (
+      industry.name.toLowerCase().includes(normalizedSearch) ||
+      industry.slug.toLowerCase().includes(normalizedSearch) ||
+      industry.description.toLowerCase().includes(normalizedSearch)
+    );
+  });
 
   /* ================= UI ================= */
 
@@ -360,8 +327,8 @@ export default function BusinessTargetsPage() {
           </h1>
 
           <p className="mt-1 max-w-2xl text-[15px] text-[#6B7280]">
-            Manage the industries your agency serves
-            and configure their SEO information.
+            Manage the industries your agency serves and configure their SEO
+            information.
           </p>
         </div>
 
@@ -373,9 +340,7 @@ export default function BusinessTargetsPage() {
 
             <input
               value={search}
-              onChange={(event) =>
-                setSearch(event.target.value)
-              }
+              onChange={(event) => setSearch(event.target.value)}
               placeholder="Search industries..."
               className="h-11 w-full rounded-xl border border-[#c7c4d7] bg-white pl-9 pr-4 text-sm text-[#1b1b23] outline-none transition placeholder:text-[#9ca3af] focus:border-[#6466e8] focus:ring-4 focus:ring-[#6466e8]/10"
             />
@@ -403,18 +368,13 @@ export default function BusinessTargetsPage() {
       {/* Stats */}
 
       <div className="mt-7 grid gap-4 sm:grid-cols-3">
-        <StatCard
-          label="Total Industries"
-          value={industries.length}
-        />
+        <StatCard label="Total Industries" value={industries.length} />
 
         <StatCard
           label="Active Targets"
           value={
             industries.filter(
-              (industry) =>
-                industry._count
-                  .serviceIndustries > 0,
+              (industry) => industry._count.serviceIndustries > 0,
             ).length
           }
         />
@@ -423,9 +383,7 @@ export default function BusinessTargetsPage() {
           label="No Service Pages"
           value={
             industries.filter(
-              (industry) =>
-                industry._count
-                  .serviceIndustries === 0,
+              (industry) => industry._count.serviceIndustries === 0,
             ).length
           }
         />
@@ -440,171 +398,128 @@ export default function BusinessTargetsPage() {
           </div>
         ) : filteredIndustries.length === 0 ? (
           <div className="px-6 py-16 text-center">
-            <p className="font-semibold text-[#464554]">
-              No industries found
-            </p>
+            <p className="font-semibold text-[#464554]">No industries found</p>
 
             <p className="mt-2 text-sm text-[#9ca3af]">
-              Try another search or add a new
-              industry.
+              Try another search or add a new industry.
             </p>
           </div>
         ) : (
           <table className="w-full min-w-[900px] text-sm">
             <thead className="bg-[#F8F7FF] text-[#464554]">
               <tr className="text-left">
-                <th className="px-6 py-4 font-semibold">
-                  Industry
-                </th>
+                <th className="px-6 py-4 font-semibold">Industry</th>
 
-                <th className="px-6 py-4 font-semibold">
-                  Description
-                </th>
+                <th className="px-6 py-4 font-semibold">Description</th>
 
-                <th className="px-6 py-4 font-semibold">
-                  Service Pages
-                </th>
+                <th className="px-6 py-4 font-semibold">Service Pages</th>
 
-                <th className="px-6 py-4 font-semibold">
-                  SEO
-                </th>
+                <th className="px-6 py-4 font-semibold">SEO</th>
 
-                <th className="px-6 py-4 font-semibold">
-                  Status
-                </th>
+                <th className="px-6 py-4 font-semibold">Status</th>
 
-                <th className="px-6 py-4 text-right font-semibold">
-                  Actions
-                </th>
+                <th className="px-6 py-4 text-right font-semibold">Actions</th>
               </tr>
             </thead>
 
             <tbody>
-              {filteredIndustries.map(
-                (industry) => {
-                  const seoComplete = Boolean(
-                    industry.metaTitle &&
-                      industry.metaDescription,
-                  );
+              {filteredIndustries.map((industry) => {
+                const seoComplete = Boolean(
+                  industry.metaTitle && industry.metaDescription,
+                );
 
-                  const isLive =
-                    industry._count
-                      .serviceIndustries > 0;
+                const isLive = industry._count.serviceIndustries > 0;
 
-                  return (
-                    <tr
-                      key={industry.id}
-                      className="border-t border-[#F1F0F7] transition hover:bg-[#FCFBFF]"
-                    >
-                      <td className="px-6 py-4">
-                        <p className="font-semibold text-[#1b1b23]">
-                          {industry.name}
-                        </p>
+                return (
+                  <tr
+                    key={industry.id}
+                    className="border-t border-[#F1F0F7] transition hover:bg-[#FCFBFF]"
+                  >
+                    <td className="px-6 py-4">
+                      <p className="font-semibold text-[#1b1b23]">
+                        {industry.name}
+                      </p>
 
-                        <p className="mt-1 text-xs text-[#9ca3af]">
-                          /industries/
-                          {industry.slug}
-                        </p>
-                      </td>
+                      <p className="mt-1 text-xs text-[#9ca3af]">
+                        /industries/
+                        {industry.slug}
+                      </p>
+                    </td>
 
-                      <td className="max-w-sm px-6 py-4 text-[#6B7280]">
-                        <p className="line-clamp-2 leading-6">
-                          {industry.description}
-                        </p>
-                      </td>
+                    <td className="max-w-sm px-6 py-4 text-[#6B7280]">
+                      <p className="line-clamp-2 leading-6">
+                        {industry.description}
+                      </p>
+                    </td>
 
-                      <td className="px-6 py-4 font-semibold text-[#1b1b23]">
-                        {
-                          industry._count
-                            .serviceIndustries
+                    <td className="px-6 py-4 font-semibold text-[#1b1b23]">
+                      {industry._count.serviceIndustries}
+                    </td>
+
+                    <td className="px-6 py-4">
+                      {seoComplete ? (
+                        <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                          Complete
+                        </span>
+                      ) : (
+                        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                          Needs work
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="px-6 py-4">
+                      {isLive ? (
+                        <span className="flex items-center gap-1.5 font-medium text-emerald-600">
+                          <CheckCircle2 size={15} />
+                          Live
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1.5 font-medium text-slate-400">
+                          <Circle size={15} />
+                          No Pages Yet
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="relative px-6 py-4 text-right">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenMenu(
+                            openMenu === industry.id ? null : industry.id,
+                          )
                         }
-                      </td>
+                        className="rounded-lg p-2 text-slate-400 transition hover:bg-[#F4F2FA] hover:text-[#4648d4]"
+                      >
+                        <MoreVertical size={18} />
+                      </button>
 
-                      <td className="px-6 py-4">
-                        {seoComplete ? (
-                          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-                            Complete
-                          </span>
-                        ) : (
-                          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-                            Needs work
-                          </span>
-                        )}
-                      </td>
+                      {openMenu === industry.id && (
+                        <div className="absolute right-6 top-12 z-30 w-36 overflow-hidden rounded-xl border border-[#E4E2F0] bg-white py-1 text-left shadow-xl">
+                          <button
+                            type="button"
+                            onClick={() => openIndustryEdit(industry)}
+                            className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-[#464554] hover:bg-[#F8F7FF]"
+                          >
+                            <Pencil size={14} />
+                            Edit
+                          </button>
 
-                      <td className="px-6 py-4">
-                        {isLive ? (
-                          <span className="flex items-center gap-1.5 font-medium text-emerald-600">
-                            <CheckCircle2
-                              size={15}
-                            />
-                            Live
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1.5 font-medium text-slate-400">
-                            <Circle size={15} />
-                            No Pages Yet
-                          </span>
-                        )}
-                      </td>
-
-                      <td className="relative px-6 py-4 text-right">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setOpenMenu(
-                              openMenu ===
-                                industry.id
-                                ? null
-                                : industry.id,
-                            )
-                          }
-                          className="rounded-lg p-2 text-slate-400 transition hover:bg-[#F4F2FA] hover:text-[#4648d4]"
-                        >
-                          <MoreVertical
-                            size={18}
-                          />
-                        </button>
-
-                        {openMenu ===
-                          industry.id && (
-                          <div className="absolute right-6 top-12 z-30 w-36 overflow-hidden rounded-xl border border-[#E4E2F0] bg-white py-1 text-left shadow-xl">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                openIndustryEdit(
-                                  industry,
-                                )
-                              }
-                              className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-[#464554] hover:bg-[#F8F7FF]"
-                            >
-                              <Pencil
-                                size={14}
-                              />
-                              Edit
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleDelete(
-                                  industry.id,
-                                )
-                              }
-                              className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
-                            >
-                              <Trash2
-                                size={14}
-                              />
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                },
-              )}
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(industry.id)}
+                            className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 size={14} />
+                            Delete
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}
@@ -620,14 +535,11 @@ export default function BusinessTargetsPage() {
             <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#E4E2F0] bg-white px-6 py-5">
               <div>
                 <h2 className="text-xl font-bold text-[#1b1b23]">
-                  {editingId
-                    ? "Edit Industry"
-                    : "Add Industry"}
+                  {editingId ? "Edit Industry" : "Add Industry"}
                 </h2>
 
                 <p className="mt-1 text-sm text-[#6B7280]">
-                  Manage industry content and SEO
-                  information.
+                  Manage industry content and SEO information.
                 </p>
               </div>
 
@@ -646,11 +558,7 @@ export default function BusinessTargetsPage() {
               <Field label="Industry name *">
                 <input
                   value={form.name}
-                  onChange={(event) =>
-                    handleNameChange(
-                      event.target.value,
-                    )
-                  }
+                  onChange={(event) => handleNameChange(event.target.value)}
                   placeholder="Healthcare"
                   className={inputClass}
                 />
@@ -664,9 +572,7 @@ export default function BusinessTargetsPage() {
                   onChange={(event) =>
                     setForm({
                       ...form,
-                      slug: createSlug(
-                        event.target.value,
-                      ),
+                      slug: createSlug(event.target.value),
                     })
                   }
                   placeholder="healthcare"
@@ -687,8 +593,7 @@ export default function BusinessTargetsPage() {
                   onChange={(event) =>
                     setForm({
                       ...form,
-                      description:
-                        event.target.value,
+                      description: event.target.value,
                     })
                   }
                   maxLength={5000}
@@ -701,13 +606,10 @@ export default function BusinessTargetsPage() {
 
               <div className="space-y-5 border-t border-[#E4E2F0] pt-6">
                 <div>
-                  <h3 className="font-bold text-[#1b1b23]">
-                    SEO Settings
-                  </h3>
+                  <h3 className="font-bold text-[#1b1b23]">SEO Settings</h3>
 
                   <p className="mt-1 text-sm text-[#6B7280]">
-                    Optional metadata for the industry
-                    landing page.
+                    Optional metadata for the industry landing page.
                   </p>
                 </div>
 
@@ -717,8 +619,7 @@ export default function BusinessTargetsPage() {
                     onChange={(event) =>
                       setForm({
                         ...form,
-                        metaTitle:
-                          event.target.value,
+                        metaTitle: event.target.value,
                       })
                     }
                     maxLength={70}
@@ -726,24 +627,16 @@ export default function BusinessTargetsPage() {
                     className={inputClass}
                   />
 
-                  <CharacterCount
-                    current={
-                      form.metaTitle.length
-                    }
-                    max={70}
-                  />
+                  <CharacterCount current={form.metaTitle.length} max={70} />
                 </Field>
 
                 <Field label="Meta description">
                   <textarea
-                    value={
-                      form.metaDescription
-                    }
+                    value={form.metaDescription}
                     onChange={(event) =>
                       setForm({
                         ...form,
-                        metaDescription:
-                          event.target.value,
+                        metaDescription: event.target.value,
                       })
                     }
                     maxLength={180}
@@ -752,10 +645,7 @@ export default function BusinessTargetsPage() {
                   />
 
                   <CharacterCount
-                    current={
-                      form.metaDescription
-                        .length
-                    }
+                    current={form.metaDescription.length}
                     max={180}
                   />
                 </Field>
@@ -763,14 +653,11 @@ export default function BusinessTargetsPage() {
                 <Field label="Canonical URL">
                   <input
                     type="url"
-                    value={
-                      form.canonicalUrl
-                    }
+                    value={form.canonicalUrl}
                     onChange={(event) =>
                       setForm({
                         ...form,
-                        canonicalUrl:
-                          event.target.value,
+                        canonicalUrl: event.target.value,
                       })
                     }
                     placeholder="https://example.com/industries/healthcare"
@@ -778,21 +665,16 @@ export default function BusinessTargetsPage() {
                   />
                 </Field>
 
-                <Field label="OG Image URL">
-                  <input
-                    type="url"
-                    value={form.ogImage}
-                    onChange={(event) =>
-                      setForm({
-                        ...form,
-                        ogImage:
-                          event.target.value,
-                      })
-                    }
-                    placeholder="https://res.cloudinary.com/..."
-                    className={inputClass}
-                  />
-                </Field>
+                <ImageUpload
+                  label="OG Image"
+                  value={form.ogImage}
+                  onChange={(url) =>
+                    setForm((current) => ({
+                      ...current,
+                      ogImage: url,
+                    }))
+                  }
+                />
               </div>
 
               {error && (
@@ -834,22 +716,12 @@ export default function BusinessTargetsPage() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
+function StatCard({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-2xl border border-[#E4E2F0] bg-white p-5">
-      <p className="text-sm font-semibold text-[#6B7280]">
-        {label}
-      </p>
+      <p className="text-sm font-semibold text-[#6B7280]">{label}</p>
 
-      <p className="mt-2 text-3xl font-bold text-[#1b1b23]">
-        {value}
-      </p>
+      <p className="mt-2 text-3xl font-bold text-[#1b1b23]">{value}</p>
     </div>
   );
 }
@@ -872,13 +744,7 @@ function Field({
   );
 }
 
-function CharacterCount({
-  current,
-  max,
-}: {
-  current: number;
-  max: number;
-}) {
+function CharacterCount({ current, max }: { current: number; max: number }) {
   return (
     <p className="mt-2 text-right text-xs text-[#9ca3af]">
       {current}/{max}

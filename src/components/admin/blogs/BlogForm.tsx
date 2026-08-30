@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   FileText,
-  ImageIcon,
   Loader2,
   Save,
   Search,
 } from "lucide-react";
+
+import ImageUpload from "@/components/admin/uploads/ImageUpload";
 
 type BlogData = {
   id?: number;
@@ -21,14 +22,19 @@ type BlogData = {
   publishedAt?: string | Date | null;
   metaTitle?: string | null;
   metaDescription?: string | null;
+  canonicalUrl?: string | null;
+  ogImage?: string | null;
 };
 
 type Props = {
   initialData?: BlogData;
 };
 
-export default function BlogForm({ initialData }: Props) {
+export default function BlogForm({
+  initialData,
+}: Props) {
   const router = useRouter();
+
   const editing = Boolean(initialData?.id);
 
   const [title, setTitle] = useState(
@@ -63,16 +69,32 @@ export default function BlogForm({ initialData }: Props) {
     initialData?.metaDescription ?? "",
   );
 
+  const [canonicalUrl, setCanonicalUrl] = useState(
+    initialData?.canonicalUrl ?? "",
+  );
+
+  const [ogImage, setOgImage] = useState(
+    initialData?.ogImage ?? "",
+  );
+
   /*
-   * publishedAt === null => Draft
-   * publishedAt has value => Published
+   * publishedAt === null
+   * → Draft
+   *
+   * publishedAt has value
+   * → Published
    */
+
   const [published, setPublished] = useState(
     Boolean(initialData?.publishedAt),
   );
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+
+  /* =========================================
+     SLUG
+  ========================================= */
 
   function generateSlug(value: string) {
     return value
@@ -89,6 +111,10 @@ export default function BlogForm({ initialData }: Props) {
       setSlug(generateSlug(value));
     }
   }
+
+  /* =========================================
+     SAVE BLOG
+  ========================================= */
 
   async function handleSubmit(
     event: React.FormEvent<HTMLFormElement>,
@@ -127,29 +153,44 @@ export default function BlogForm({ initialData }: Props) {
 
           body: JSON.stringify({
             title: title.trim(),
+
             slug: slug.trim(),
 
-            excerpt: excerpt.trim() || null,
+            excerpt:
+              excerpt.trim() || null,
+
             content: content.trim(),
 
-            category: category.trim() || null,
+            category:
+              category.trim() || null,
 
             featuredImage:
               featuredImage.trim() || null,
 
             /*
-             * If Publish is selected, save current date/time.
-             * If Draft, save null.
+             * If publishing for the first time,
+             * use the current date.
+             *
+             * If already published, keep the
+             * original publish date.
              */
+
             publishedAt: published
               ? initialData?.publishedAt ||
                 new Date().toISOString()
               : null,
 
-            metaTitle: metaTitle.trim() || null,
+            metaTitle:
+              metaTitle.trim() || null,
 
             metaDescription:
               metaDescription.trim() || null,
+
+            canonicalUrl:
+              canonicalUrl.trim() || null,
+
+            ogImage:
+              ogImage.trim() || null,
           }),
         },
       );
@@ -177,31 +218,43 @@ export default function BlogForm({ initialData }: Props) {
     }
   }
 
+  /* =========================================
+     UI
+  ========================================= */
+
   return (
     <form
       onSubmit={handleSubmit}
       className="grid gap-7 xl:grid-cols-[1.2fr_0.8fr]"
     >
-      {/* LEFT COLUMN */}
+      {/* =====================================
+          LEFT COLUMN
+      ====================================== */}
 
       <div className="space-y-7">
-        {/* MAIN CONTENT */}
+        {/* BLOG CONTENT */}
 
         <Section
           title="Blog Content"
           description="Write the main content of your article."
         >
+          {/* Title */}
+
           <Field label="Blog title" required>
             <input
               value={title}
               onChange={(event) =>
-                handleTitleChange(event.target.value)
+                handleTitleChange(
+                  event.target.value,
+                )
               }
               maxLength={200}
               placeholder="10 Ways AI Can Help Your Business"
               className={inputClass}
             />
           </Field>
+
+          {/* Slug */}
 
           <Field label="Slug" required>
             <div className="flex overflow-hidden rounded-xl border border-black/10 bg-[#fafaf7] focus-within:border-[#6466e8] focus-within:ring-4 focus-within:ring-[#6466e8]/10">
@@ -213,7 +266,9 @@ export default function BlogForm({ initialData }: Props) {
                 value={slug}
                 onChange={(event) =>
                   setSlug(
-                    generateSlug(event.target.value),
+                    generateSlug(
+                      event.target.value,
+                    ),
                   )
                 }
                 placeholder="ai-for-business"
@@ -222,11 +277,15 @@ export default function BlogForm({ initialData }: Props) {
             </div>
           </Field>
 
+          {/* Excerpt */}
+
           <Field label="Excerpt">
             <textarea
               value={excerpt}
               onChange={(event) =>
-                setExcerpt(event.target.value)
+                setExcerpt(
+                  event.target.value,
+                )
               }
               maxLength={500}
               placeholder="Write a short summary that will appear on the blog listing page..."
@@ -239,11 +298,18 @@ export default function BlogForm({ initialData }: Props) {
             />
           </Field>
 
-          <Field label="Article content" required>
+          {/* Article */}
+
+          <Field
+            label="Article content"
+            required
+          >
             <textarea
               value={content}
               onChange={(event) =>
-                setContent(event.target.value)
+                setContent(
+                  event.target.value,
+                )
               }
               placeholder={`Write your article here...
 
@@ -258,61 +324,49 @@ Add your detailed content here...`}
             />
 
             <p className="mt-2 text-xs text-black/35">
-              {content.length.toLocaleString()} characters
+              {content.length.toLocaleString()}{" "}
+              characters
             </p>
           </Field>
         </Section>
 
-        {/* FEATURED IMAGE */}
+        {/* =====================================
+            FEATURED IMAGE
+        ====================================== */}
 
         <Section
           title="Featured Image"
           description="Main image displayed on the blog card and article."
         >
-          <Field label="Image URL">
-            <input
-              value={featuredImage}
-              onChange={(event) =>
-                setFeaturedImage(event.target.value)
-              }
-              placeholder="https://res.cloudinary.com/..."
-              className={inputClass}
-            />
-          </Field>
-
-          {featuredImage ? (
-            <div className="overflow-hidden rounded-2xl border border-black/5">
-              <img
-                src={featuredImage}
-                alt="Featured image preview"
-                className="aspect-[16/9] w-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="flex aspect-[16/9] flex-col items-center justify-center rounded-2xl border border-dashed border-black/10 bg-[#fafaf7]">
-              <ImageIcon className="h-9 w-9 text-black/15" />
-
-              <p className="mt-3 text-sm font-semibold text-black/30">
-                No featured image
-              </p>
-            </div>
-          )}
+          <ImageUpload
+            label="Featured Image"
+            value={featuredImage}
+            onChange={setFeaturedImage}
+          />
         </Section>
       </div>
 
-      {/* RIGHT COLUMN */}
+      {/* =====================================
+          RIGHT COLUMN
+      ====================================== */}
 
       <div className="space-y-7">
-        {/* PUBLISHING */}
+        {/* =====================================
+            PUBLISHING
+        ====================================== */}
 
         <Section
           title="Publishing"
           description="Control whether this article is publicly available."
         >
           <div className="grid grid-cols-2 gap-3">
+            {/* Draft */}
+
             <button
               type="button"
-              onClick={() => setPublished(false)}
+              onClick={() =>
+                setPublished(false)
+              }
               className={`rounded-xl border p-4 text-left transition ${
                 !published
                   ? "border-amber-300 bg-amber-50 ring-2 ring-amber-100"
@@ -337,9 +391,13 @@ Add your detailed content here...`}
               </p>
             </button>
 
+            {/* Publish */}
+
             <button
               type="button"
-              onClick={() => setPublished(true)}
+              onClick={() =>
+                setPublished(true)
+              }
               className={`rounded-xl border p-4 text-left transition ${
                 published
                   ? "border-emerald-300 bg-emerald-50 ring-2 ring-emerald-100"
@@ -376,7 +434,9 @@ Add your detailed content here...`}
           )}
         </Section>
 
-        {/* CATEGORY */}
+        {/* =====================================
+            CATEGORY
+        ====================================== */}
 
         <Section
           title="Organization"
@@ -386,7 +446,9 @@ Add your detailed content here...`}
             <input
               value={category}
               onChange={(event) =>
-                setCategory(event.target.value)
+                setCategory(
+                  event.target.value,
+                )
               }
               placeholder="AI & Automation"
               className={inputClass}
@@ -394,17 +456,23 @@ Add your detailed content here...`}
           </Field>
         </Section>
 
-        {/* SEO */}
+        {/* =====================================
+            SEO
+        ====================================== */}
 
         <Section
           title="Search Engine Optimization"
-          description="Control how this article appears in search results."
+          description="Control how this article appears in search results and social sharing."
         >
+          {/* Meta title */}
+
           <Field label="Meta title">
             <input
               value={metaTitle}
               onChange={(event) =>
-                setMetaTitle(event.target.value)
+                setMetaTitle(
+                  event.target.value,
+                )
               }
               maxLength={70}
               placeholder="AI for Business: Complete Guide"
@@ -412,10 +480,17 @@ Add your detailed content here...`}
             />
 
             <div className="mt-2 flex justify-between text-xs text-black/35">
-              <span>50–60 recommended</span>
-              <span>{metaTitle.length}/70</span>
+              <span>
+                50–60 recommended
+              </span>
+
+              <span>
+                {metaTitle.length}/70
+              </span>
             </div>
           </Field>
+
+          {/* Meta Description */}
 
           <Field label="Meta description">
             <textarea
@@ -431,15 +506,56 @@ Add your detailed content here...`}
             />
 
             <div className="mt-2 flex justify-between text-xs text-black/35">
-              <span>150–160 recommended</span>
               <span>
-                {metaDescription.length}/180
+                150–160 recommended
+              </span>
+
+              <span>
+                {metaDescription.length}
+                /180
               </span>
             </div>
           </Field>
+
+          {/* Canonical */}
+
+          <Field label="Canonical URL">
+            <input
+              type="url"
+              value={canonicalUrl}
+              onChange={(event) =>
+                setCanonicalUrl(
+                  event.target.value,
+                )
+              }
+              placeholder="https://example.com/blog/ai-for-business"
+              className={inputClass}
+            />
+
+            <p className="mt-2 text-xs leading-5 text-black/35">
+              Optional. Used to tell search
+              engines which URL is the main
+              version of this article.
+            </p>
+          </Field>
+
+          {/* OG IMAGE */}
+
+          <ImageUpload
+            label="OG Image"
+            value={ogImage}
+            onChange={setOgImage}
+          />
+
+          <p className="-mt-3 text-xs leading-5 text-black/35">
+            Used when this article is shared on
+            social media platforms.
+          </p>
         </Section>
 
-        {/* GOOGLE PREVIEW */}
+        {/* =====================================
+            GOOGLE PREVIEW
+        ====================================== */}
 
         <Section
           title="Search Preview"
@@ -450,8 +566,10 @@ Add your detailed content here...`}
               <Search size={14} />
 
               <span className="truncate">
-                yourwebsite.com/blog/
-                {slug || "..."}
+                {canonicalUrl ||
+                  `yourwebsite.com/blog/${
+                    slug || "..."
+                  }`}
               </span>
             </div>
 
@@ -469,7 +587,9 @@ Add your detailed content here...`}
           </div>
         </Section>
 
-        {/* ERROR */}
+        {/* =====================================
+            ERROR
+        ====================================== */}
 
         {error && (
           <div
@@ -480,7 +600,9 @@ Add your detailed content here...`}
           </div>
         )}
 
-        {/* SAVE */}
+        {/* =====================================
+            SAVE
+        ====================================== */}
 
         <button
           type="submit"
@@ -493,6 +615,7 @@ Add your detailed content here...`}
                 size={17}
                 className="animate-spin"
               />
+
               Saving...
             </>
           ) : (
@@ -511,6 +634,10 @@ Add your detailed content here...`}
     </form>
   );
 }
+
+/* =========================================
+   SECTION
+========================================= */
 
 function Section({
   title,
@@ -538,6 +665,10 @@ function Section({
   );
 }
 
+/* =========================================
+   FIELD
+========================================= */
+
 function Field({
   label,
   required,
@@ -564,6 +695,10 @@ function Field({
   );
 }
 
+/* =========================================
+   CHARACTER COUNT
+========================================= */
+
 function CharacterCount({
   current,
   maximum,
@@ -577,6 +712,10 @@ function CharacterCount({
     </p>
   );
 }
+
+/* =========================================
+   INPUT
+========================================= */
 
 const inputClass =
   "h-12 w-full rounded-xl border border-black/10 bg-[#fafaf7] px-4 text-sm text-[#1b1b23] outline-none transition placeholder:text-black/30 focus:border-[#6466e8] focus:bg-white focus:ring-4 focus:ring-[#6466e8]/10";

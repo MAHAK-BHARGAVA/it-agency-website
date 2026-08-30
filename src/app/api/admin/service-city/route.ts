@@ -21,3 +21,49 @@ export async function POST(request: NextRequest) {
   })
   return NextResponse.json(combo, { status: 201 })
 }
+
+export async function DELETE(request: NextRequest) {
+  const auth = await requireAuth(request);
+
+  if (!auth.authorized) {
+    return auth.response;
+  }
+
+  try {
+    const { serviceId, cityId } = await request.json();
+
+    if (!serviceId || !cityId) {
+      return NextResponse.json(
+        { error: "Service and city are required" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.serviceCity.delete({
+      where: {
+        serviceId_cityId: {
+          serviceId: Number(serviceId),
+          cityId: Number(cityId),
+        },
+      },
+    });
+
+    return NextResponse.json({
+      message: "Service-city content deleted successfully",
+    });
+  } catch (error: any) {
+    console.error("DELETE service-city error:", error);
+
+    if (error?.code === "P2025") {
+      return NextResponse.json(
+        { error: "Content not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Failed to delete service-city content" },
+      { status: 500 }
+    );
+  }
+}

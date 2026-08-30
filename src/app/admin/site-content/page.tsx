@@ -10,6 +10,7 @@ import {
   Save,
   Settings2,
 } from "lucide-react";
+import ImageUpload from "@/components/admin/uploads/ImageUpload";
 
 type Tab = "hero" | "about" | "settings";
 
@@ -112,8 +113,7 @@ export default function SiteContentPage() {
 
   const [hero, setHero] = useState<HeroData>(emptyHero);
   const [about, setAbout] = useState<AboutData>(emptyAbout);
-  const [settings, setSettings] =
-    useState<SettingsData>(emptySettings);
+  const [settings, setSettings] = useState<SettingsData>(emptySettings);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -130,84 +130,78 @@ export default function SiteContentPage() {
       setLoading(true);
       setError("");
 
-      const [heroResponse, aboutResponse, settingsResponse] =
-        await Promise.all([
+      const [heroResponse, aboutResponse, settingsResponse] = await Promise.all(
+        [
           fetch("/api/admin/home-hero"),
           fetch("/api/admin/home-about"),
           fetch("/api/admin/site-settings"),
-        ]);
+        ],
+      );
 
-      if (
-        !heroResponse.ok ||
-        !aboutResponse.ok ||
-        !settingsResponse.ok
-      ) {
+      if (!heroResponse.ok || !aboutResponse.ok || !settingsResponse.ok) {
         throw new Error("Unable to load website content.");
       }
 
-      const [heroData, aboutData, settingsData] =
-        await Promise.all([
-          heroResponse.json(),
-          aboutResponse.json(),
-          settingsResponse.json(),
-        ]);
-if (heroData) {
-  setHero({
-    badge: heroData.badge ?? "",
-    title: heroData.title ?? "",
-    description: heroData.description ?? "",
-    primaryButtonText: heroData.primaryButtonText ?? "",
-    primaryButtonLink: heroData.primaryButtonLink ?? "",
-    secondaryButtonText: heroData.secondaryButtonText ?? "",
-    secondaryButtonLink: heroData.secondaryButtonLink ?? "",
-    heroImage: heroData.heroImage ?? "",
-  });
-}
+      const [heroData, aboutData, settingsData] = await Promise.all([
+        heroResponse.json(),
+        aboutResponse.json(),
+        settingsResponse.json(),
+      ]);
+      if (heroData) {
+        setHero({
+          badge: heroData.badge ?? "",
+          title: heroData.title ?? "",
+          description: heroData.description ?? "",
+          primaryButtonText: heroData.primaryButtonText ?? "",
+          primaryButtonLink: heroData.primaryButtonLink ?? "",
+          secondaryButtonText: heroData.secondaryButtonText ?? "",
+          secondaryButtonLink: heroData.secondaryButtonLink ?? "",
+          heroImage: heroData.heroImage ?? "",
+        });
+      }
 
-if (aboutData) {
-  setAbout({
-    sectionTitle: aboutData.sectionTitle ?? "",
-    title: aboutData.title ?? "",
-    description: aboutData.description ?? "",
-    experience: aboutData.experience ?? 0,
-    image: aboutData.image ?? "",
-    featureOne: aboutData.featureOne ?? "",
-    featureTwo: aboutData.featureTwo ?? "",
-    featureThree: aboutData.featureThree ?? "",
-  });
-}
+      if (aboutData) {
+        setAbout({
+          sectionTitle: aboutData.sectionTitle ?? "",
+          title: aboutData.title ?? "",
+          description: aboutData.description ?? "",
+          experience: aboutData.experience ?? 0,
+          image: aboutData.image ?? "",
+          featureOne: aboutData.featureOne ?? "",
+          featureTwo: aboutData.featureTwo ?? "",
+          featureThree: aboutData.featureThree ?? "",
+        });
+      }
 
-if (settingsData) {
-  setSettings({
-    companyName: settingsData.companyName ?? "",
-    logo: settingsData.logo ?? "",
-    whiteLogo: settingsData.whiteLogo ?? "",
-    favicon: settingsData.favicon ?? "",
+      if (settingsData) {
+        setSettings({
+          companyName: settingsData.companyName ?? "",
+          logo: settingsData.logo ?? "",
+          whiteLogo: settingsData.whiteLogo ?? "",
+          favicon: settingsData.favicon ?? "",
 
-    phone: settingsData.phone ?? "",
-    email: settingsData.email ?? "",
-    address: settingsData.address ?? "",
+          phone: settingsData.phone ?? "",
+          email: settingsData.email ?? "",
+          address: settingsData.address ?? "",
 
-    facebook: settingsData.facebook ?? "",
-    instagram: settingsData.instagram ?? "",
-    linkedin: settingsData.linkedin ?? "",
-    twitter: settingsData.twitter ?? "",
-    youtube: settingsData.youtube ?? "",
+          facebook: settingsData.facebook ?? "",
+          instagram: settingsData.instagram ?? "",
+          linkedin: settingsData.linkedin ?? "",
+          twitter: settingsData.twitter ?? "",
+          youtube: settingsData.youtube ?? "",
 
-    salesEmail: settingsData.salesEmail ?? "",
-    seoEmail: settingsData.seoEmail ?? "",
-    aiEmail: settingsData.aiEmail ?? "",
-    supportEmail: settingsData.supportEmail ?? "",
-    mediaEmail: settingsData.mediaEmail ?? "",
+          salesEmail: settingsData.salesEmail ?? "",
+          seoEmail: settingsData.seoEmail ?? "",
+          aiEmail: settingsData.aiEmail ?? "",
+          supportEmail: settingsData.supportEmail ?? "",
+          mediaEmail: settingsData.mediaEmail ?? "",
 
-    footerCopyright: settingsData.footerCopyright ?? "",
-  });
-}
+          footerCopyright: settingsData.footerCopyright ?? "",
+        });
+      }
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to load website content.",
+        err instanceof Error ? err.message : "Unable to load website content.",
       );
     } finally {
       setLoading(false);
@@ -246,19 +240,13 @@ if (settingsData) {
 
       if (!response.ok) {
         throw new Error(
-          data.message ||
-            data.error ||
-            "Unable to save changes.",
+          data.message || data.error || "Unable to save changes.",
         );
       }
 
       setSuccess("Changes saved successfully.");
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to save changes.",
-      );
+      setError(err instanceof Error ? err.message : "Unable to save changes.");
     } finally {
       setSaving(false);
     }
@@ -286,8 +274,8 @@ if (settingsData) {
         </h1>
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-black/50">
-          Update homepage content and global company information
-          without changing the website code.
+          Update homepage content and global company information without
+          changing the website code.
         </p>
       </div>
 
@@ -332,25 +320,12 @@ if (settingsData) {
       </div>
 
       <div className="mt-7">
-        {tab === "hero" && (
-          <HeroEditor
-            data={hero}
-            setData={setHero}
-          />
-        )}
+        {tab === "hero" && <HeroEditor data={hero} setData={setHero} />}
 
-        {tab === "about" && (
-          <AboutEditor
-            data={about}
-            setData={setAbout}
-          />
-        )}
+        {tab === "about" && <AboutEditor data={about} setData={setAbout} />}
 
         {tab === "settings" && (
-          <SettingsEditor
-            data={settings}
-            setData={setSettings}
-          />
+          <SettingsEditor data={settings} setData={setSettings} />
         )}
       </div>
 
@@ -376,10 +351,7 @@ if (settingsData) {
         >
           {saving ? (
             <>
-              <Loader2
-                size={17}
-                className="animate-spin"
-              />
+              <Loader2 size={17} className="animate-spin" />
               Saving...
             </>
           ) : (
@@ -401,9 +373,7 @@ function HeroEditor({
   setData,
 }: {
   data: HeroData;
-  setData: React.Dispatch<
-    React.SetStateAction<HeroData>
-  >;
+  setData: React.Dispatch<React.SetStateAction<HeroData>>;
 }) {
   return (
     <div className="grid gap-7 xl:grid-cols-[1.15fr_0.85fr]">
@@ -505,22 +475,15 @@ function HeroEditor({
       </Section>
 
       <Section title="Hero Image">
-        <Field label="Image URL">
-          <input
-            value={data.heroImage}
-            onChange={(e) =>
-              setData({
-                ...data,
-                heroImage: e.target.value,
-              })
-            }
-            className={inputClass}
-          />
-        </Field>
-
-        <ImagePreview
-          src={data.heroImage}
-          label="Hero image"
+        <ImageUpload
+          label="Hero Image"
+          value={data.heroImage}
+          onChange={(url) =>
+            setData((current) => ({
+              ...current,
+              heroImage: url,
+            }))
+          }
         />
       </Section>
     </div>
@@ -534,9 +497,7 @@ function AboutEditor({
   setData,
 }: {
   data: AboutData;
-  setData: React.Dispatch<
-    React.SetStateAction<AboutData>
-  >;
+  setData: React.Dispatch<React.SetStateAction<AboutData>>;
 }) {
   return (
     <div className="grid gap-7 xl:grid-cols-[1.15fr_0.85fr]">
@@ -598,22 +559,15 @@ function AboutEditor({
 
       <div className="space-y-7">
         <Section title="About Image">
-          <Field label="Image URL">
-            <input
-              value={data.image}
-              onChange={(e) =>
-                setData({
-                  ...data,
-                  image: e.target.value,
-                })
-              }
-              className={inputClass}
-            />
-          </Field>
-
-          <ImagePreview
-            src={data.image}
-            label="About image"
+          <ImageUpload
+            label="About Image"
+            value={data.image}
+            onChange={(url) =>
+              setData((current) => ({
+                ...current,
+                image: url,
+              }))
+            }
           />
         </Section>
 
@@ -669,14 +623,9 @@ function SettingsEditor({
   setData,
 }: {
   data: SettingsData;
-  setData: React.Dispatch<
-    React.SetStateAction<SettingsData>
-  >;
+  setData: React.Dispatch<React.SetStateAction<SettingsData>>;
 }) {
-  function update(
-    key: keyof SettingsData,
-    value: string,
-  ) {
+  function update(key: keyof SettingsData, value: string) {
     setData((current) => ({
       ...current,
       [key]: value,
@@ -689,9 +638,7 @@ function SettingsEditor({
         <Field label="Company name">
           <input
             value={data.companyName}
-            onChange={(e) =>
-              update("companyName", e.target.value)
-            }
+            onChange={(e) => update("companyName", e.target.value)}
             className={inputClass}
           />
         </Field>
@@ -699,9 +646,7 @@ function SettingsEditor({
         <Field label="Phone">
           <input
             value={data.phone}
-            onChange={(e) =>
-              update("phone", e.target.value)
-            }
+            onChange={(e) => update("phone", e.target.value)}
             className={inputClass}
           />
         </Field>
@@ -710,9 +655,7 @@ function SettingsEditor({
           <input
             type="email"
             value={data.email}
-            onChange={(e) =>
-              update("email", e.target.value)
-            }
+            onChange={(e) => update("email", e.target.value)}
             className={inputClass}
           />
         </Field>
@@ -720,110 +663,75 @@ function SettingsEditor({
         <Field label="Address">
           <textarea
             value={data.address}
-            onChange={(e) =>
-              update("address", e.target.value)
-            }
+            onChange={(e) => update("address", e.target.value)}
             className={textareaClass}
           />
         </Field>
       </Section>
 
       <Section title="Brand Assets">
-        <Field label="Logo URL">
-          <input
-            value={data.logo}
-            onChange={(e) =>
-              update("logo", e.target.value)
-            }
-            className={inputClass}
-          />
-        </Field>
+        <ImageUpload
+          label="Main Logo"
+          value={data.logo}
+          onChange={(url) => update("logo", url)}
+        />
 
-        <Field label="White logo URL">
-          <input
-            value={data.whiteLogo}
-            onChange={(e) =>
-              update("whiteLogo", e.target.value)
-            }
-            className={inputClass}
-          />
-        </Field>
+        <ImageUpload
+          label="White Logo"
+          value={data.whiteLogo}
+          onChange={(url) => update("whiteLogo", url)}
+        />
 
-        <Field label="Favicon URL">
-          <input
-            value={data.favicon}
-            onChange={(e) =>
-              update("favicon", e.target.value)
-            }
-            className={inputClass}
-          />
-        </Field>
+        <ImageUpload
+          label="Favicon"
+          value={data.favicon}
+          onChange={(url) => update("favicon", url)}
+        />
       </Section>
 
       <Section title="Department Emails">
         <EmailField
           label="Sales"
           value={data.salesEmail}
-          onChange={(value) =>
-            update("salesEmail", value)
-          }
+          onChange={(value) => update("salesEmail", value)}
         />
 
         <EmailField
           label="SEO"
           value={data.seoEmail}
-          onChange={(value) =>
-            update("seoEmail", value)
-          }
+          onChange={(value) => update("seoEmail", value)}
         />
 
         <EmailField
           label="AI"
           value={data.aiEmail}
-          onChange={(value) =>
-            update("aiEmail", value)
-          }
+          onChange={(value) => update("aiEmail", value)}
         />
 
         <EmailField
           label="Support"
           value={data.supportEmail}
-          onChange={(value) =>
-            update("supportEmail", value)
-          }
+          onChange={(value) => update("supportEmail", value)}
         />
 
         <EmailField
           label="Media"
           value={data.mediaEmail}
-          onChange={(value) =>
-            update("mediaEmail", value)
-          }
+          onChange={(value) => update("mediaEmail", value)}
         />
       </Section>
 
       <Section title="Social Links">
         {(
-          [
-            "facebook",
-            "instagram",
-            "linkedin",
-            "twitter",
-            "youtube",
-          ] as const
+          ["facebook", "instagram", "linkedin", "twitter", "youtube"] as const
         ).map((network) => (
           <Field
             key={network}
-            label={
-              network.charAt(0).toUpperCase() +
-              network.slice(1)
-            }
+            label={network.charAt(0).toUpperCase() + network.slice(1)}
           >
             <input
               value={data[network]}
-              onChange={(e) =>
-                update(network, e.target.value)
-              }
+              onChange={(e) => update(network, e.target.value)}
               className={inputClass}
               placeholder={`https://${network}.com/...`}
             />
@@ -833,12 +741,7 @@ function SettingsEditor({
         <Field label="Footer copyright">
           <input
             value={data.footerCopyright}
-            onChange={(e) =>
-              update(
-                "footerCopyright",
-                e.target.value,
-              )
-            }
+            onChange={(e) => update("footerCopyright", e.target.value)}
             className={inputClass}
           />
         </Field>
@@ -885,13 +788,9 @@ function Section({
 }) {
   return (
     <section className="rounded-[24px] border border-black/5 bg-white p-6 shadow-sm">
-      <h2 className="text-lg font-black text-black">
-        {title}
-      </h2>
+      <h2 className="text-lg font-black text-black">{title}</h2>
 
-      <div className="mt-6 space-y-5">
-        {children}
-      </div>
+      <div className="mt-6 space-y-5">{children}</div>
     </section>
   );
 }
@@ -928,22 +827,14 @@ function EmailField({
       <input
         type="email"
         value={value}
-        onChange={(e) =>
-          onChange(e.target.value)
-        }
+        onChange={(e) => onChange(e.target.value)}
         className={inputClass}
       />
     </Field>
   );
 }
 
-function ImagePreview({
-  src,
-  label,
-}: {
-  src: string;
-  label: string;
-}) {
+function ImagePreview({ src, label }: { src: string; label: string }) {
   if (!src) {
     return (
       <div className="flex h-52 flex-col items-center justify-center rounded-2xl border border-dashed border-black/10 bg-[#fafaf7]">
@@ -958,11 +849,7 @@ function ImagePreview({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-black/5">
-      <img
-        src={src}
-        alt={label}
-        className="h-60 w-full object-cover"
-      />
+      <img src={src} alt={label} className="h-60 w-full object-cover" />
     </div>
   );
 }
