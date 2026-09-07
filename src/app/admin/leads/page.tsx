@@ -103,7 +103,7 @@ export default async function AdminLeadsPage({ searchParams }: Props) {
                 some: {
                   status: "PENDING",
                   scheduledAt: {
-                    gte: startOfToday,
+                    gte: now,
                     lte: endOfToday,
                   },
                 },
@@ -115,7 +115,7 @@ export default async function AdminLeadsPage({ searchParams }: Props) {
                   some: {
                     status: "PENDING",
                     scheduledAt: {
-                      lt: startOfToday,
+                      lt: now,
                     },
                   },
                 },
@@ -182,7 +182,7 @@ export default async function AdminLeadsPage({ searchParams }: Props) {
         where: {
           status: "PENDING",
           scheduledAt: {
-            gte: startOfToday,
+            gte: now,
             lte: endOfToday,
           },
         },
@@ -193,7 +193,7 @@ export default async function AdminLeadsPage({ searchParams }: Props) {
         where: {
           status: "PENDING",
           scheduledAt: {
-            lt: startOfToday,
+            lt: now,
           },
         },
       }),

@@ -11,9 +11,7 @@ type Props = {
   }>;
 };
 
-export default async function EditBlogPage({
-  params,
-}: Props) {
+export default async function EditBlogPage({ params }: Props) {
   const { id } = await params;
   const blogId = Number(id);
 
@@ -51,8 +49,7 @@ export default async function EditBlogPage({
         </h1>
 
         <p className="mt-2 max-w-2xl text-sm leading-6 text-black/50">
-          Update article content, publishing settings and SEO
-          information.
+          Update article content, publishing settings and SEO information.
         </p>
       </div>
 
@@ -69,6 +66,8 @@ export default async function EditBlogPage({
             publishedAt: blog.publishedAt,
             metaTitle: blog.metaTitle,
             metaDescription: blog.metaDescription,
+            canonicalUrl: blog.canonicalUrl,
+            ogImage: blog.ogImage,
           }}
         />
       </div>

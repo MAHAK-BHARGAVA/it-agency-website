@@ -271,6 +271,7 @@ export default function BlogForm({
                     ),
                   )
                 }
+                maxLength={180}
                 placeholder="ai-for-business"
                 className="h-12 min-w-0 flex-1 bg-transparent px-4 text-sm text-[#1b1b23] outline-none"
               />
