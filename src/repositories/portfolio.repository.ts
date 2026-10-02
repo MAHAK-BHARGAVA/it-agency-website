@@ -18,6 +18,10 @@ export async function getAllPortfolio() {
     orderBy: {
       createdAt: "desc",
     },
+    include: {
+      services: true,
+      industries: true,
+    },
   });
 }
 
