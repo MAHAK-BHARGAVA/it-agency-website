@@ -2,7 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowUpRight, LockKeyhole } from "lucide-react";
+import {
+  ArrowUpRight,
+  LockKeyhole,
+  ShieldCheck,
+} from "lucide-react";
+import PhoneInput from "@/components/ui/PhoneInput";
 
 type ServiceOption = {
   id: number;
@@ -20,92 +25,484 @@ const startTimeOptions = [
   { label: "Just Exploring", value: "Just Exploring" },
 ];
 
+type Step = "form" | "otp";
+
 export default function QuickEnquiryForm({ services }: Props) {
   const router = useRouter();
 
-  const [status, setStatus] = useState<"idle" | "submitting" | "error">("idle");
+  const [step, setStep] = useState<Step>("form");
+
+  const [status, setStatus] = useState<
+    "idle" | "sendingOtp" | "verifying" | "submitting" | "error"
+  >("idle");
 
   const [error, setError] = useState("");
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const [verificationId, setVerificationId] = useState("");
 
-    setStatus("submitting");
-    setError("");
+  const [emailOtp, setEmailOtp] = useState("");
+  const [phoneOtp, setPhoneOtp] = useState("");
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
+  const [resendCooldown, setResendCooldown] = useState(0);
 
-    const name = String(formData.get("name") ?? "").trim();
-    const phone = String(formData.get("phone") ?? "").trim();
-    const serviceId = Number(formData.get("serviceId"));
-    const preferredStartTime = String(
-      formData.get("preferredStartTime") ?? "",
-    ).trim();
+  // PHONE
+  const [countryCode, setCountryCode] = useState("+91");
+  const [phoneNumber, setPhoneNumber] = useState("");
 
-    const cleanedPhone = phone.replace(/\D/g, "");
-    const website = String(formData.get("website") ?? "").trim();
+  const [formValues, setFormValues] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    serviceId: "",
+    preferredStartTime: "",
+    website: "",
+  });
+
+  /* =========================================================
+     BUILD COMPLETE INTERNATIONAL PHONE NUMBER
+  ========================================================= */
+
+  function getFullPhoneNumber() {
+    const digits = phoneNumber.replace(/\D/g, "");
+
+    return `${countryCode}${digits}`;
+  }
+
+  /* =========================================================
+     START RESEND TIMER
+  ========================================================= */
+
+  function startResendCooldown() {
+    setResendCooldown(60);
+
+    const interval = setInterval(() => {
+      setResendCooldown((current) => {
+        if (current <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+
+        return current - 1;
+      });
+    }, 1000);
+  }
+
+  /* =========================================================
+     VALIDATE FORM
+  ========================================================= */
+
+  function validateForm(values = formValues) {
+    const {
+      name,
+      email,
+      serviceId,
+      preferredStartTime,
+    } = values;
+
+    const cleanedPhone = phoneNumber.replace(/\D/g, "");
 
     if (name.length < 2 || name.length > 100) {
-      setStatus("error");
       setError("Please enter your full name.");
-      return;
+      return false;
     }
 
-    if (cleanedPhone.length < 10 || cleanedPhone.length > 15) {
-      setStatus("error");
+    if (
+      !email ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ) {
+      setError("Please enter a valid email address.");
+      return false;
+    }
+
+    if (
+      cleanedPhone.length < 6 ||
+      cleanedPhone.length > 15
+    ) {
       setError("Please enter a valid contact number.");
-      return;
+      return false;
     }
 
-    if (!Number.isInteger(serviceId) || serviceId <= 0) {
-      setStatus("error");
+    const serviceIdNumber = Number(serviceId);
+
+    if (
+      !Number.isInteger(serviceIdNumber) ||
+      serviceIdNumber <= 0
+    ) {
       setError("Please select a service.");
-      return;
+      return false;
     }
 
     if (!preferredStartTime) {
-      setStatus("error");
       setError("Please select your preferred start time.");
+      return false;
+    }
+
+    return true;
+  }
+
+  /* =========================================================
+     SEND OTP
+  ========================================================= */
+
+  async function sendOtp(values = formValues) {
+    setError("");
+
+    if (!validateForm(values)) {
+      setStatus("error");
       return;
     }
 
+    setStatus("sendingOtp");
+
     try {
-      console.log("Submitting enquiry...");
+      const response = await fetch("/api/otp/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email.trim().toLowerCase(),
+
+          // FULL INTERNATIONAL NUMBER
+          phone: values.phone,
+
+          serviceId: Number(values.serviceId),
+          preferredStartTime: values.preferredStartTime,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Unable to send verification OTP."
+        );
+      }
+
+      setVerificationId(data.verificationId);
+
+      setEmailOtp("");
+      setPhoneOtp("");
+
+      setStep("otp");
+      setStatus("idle");
+
+      startResendCooldown();
+    } catch (error) {
+      setStatus("error");
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while sending OTP."
+      );
+    }
+  }
+
+  /* =========================================================
+     VERIFY OTP
+  ========================================================= */
+
+  async function verifyOtp() {
+    setError("");
+
+    if (!/^\d{6}$/.test(emailOtp)) {
+      setError("Please enter the 6-digit email OTP.");
+      setStatus("error");
+      return;
+    }
+
+    if (!/^\d{6}$/.test(phoneOtp)) {
+      setError("Please enter the 6-digit phone OTP.");
+      setStatus("error");
+      return;
+    }
+
+    if (!verificationId) {
+      setError(
+        "Verification session not found. Please request OTP again."
+      );
+      setStatus("error");
+      return;
+    }
+
+    setStatus("verifying");
+
+    try {
+      const response = await fetch("/api/otp/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          verificationId,
+          email: formValues.email.trim().toLowerCase(),
+
+          // FULL INTERNATIONAL NUMBER
+          phone: formValues.phone,
+
+          emailOtp,
+          phoneOtp,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Invalid OTP. Please try again."
+        );
+      }
+
+      await submitLead();
+    } catch (error) {
+      setStatus("error");
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : "OTP verification failed."
+      );
+    }
+  }
+
+  /* =========================================================
+     SUBMIT FINAL LEAD
+  ========================================================= */
+
+  async function submitLead() {
+    setError("");
+    setStatus("submitting");
+
+    try {
       const response = await fetch("/api/leads", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name,
-          phone,
-          serviceId,
-          preferredStartTime,
-          website,
+          name: formValues.name,
+          email: formValues.email.trim().toLowerCase(),
+
+          // FULL INTERNATIONAL NUMBER
+          phone: formValues.phone,
+
+          serviceId: Number(formValues.serviceId),
+          preferredStartTime: formValues.preferredStartTime,
+          website: formValues.website,
+          verificationId,
         }),
       });
 
       const data = await response.json();
 
-      console.log("Lead API response:", data);
-
       if (!response.ok) {
-        throw new Error(data.message || "Unable to submit your enquiry.");
+        throw new Error(
+          data.message || "Unable to submit your enquiry."
+        );
       }
 
-      form.reset();
       setStatus("idle");
 
-      // Temporarily disable redirect while testing
       router.push("/thank-you");
-    } catch (submitError) {
+    } catch (error) {
       setStatus("error");
 
       setError(
-        submitError instanceof Error
-          ? submitError.message
-          : "Something went wrong. Please try again.",
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
+    }
+  }
+
+  /* =========================================================
+     RESEND OTP
+  ========================================================= */
+
+  async function resendOtp() {
+    if (resendCooldown > 0) return;
+
+    setError("");
+    setStatus("sendingOtp");
+
+    try {
+      const response = await fetch("/api/otp/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formValues.name,
+          email: formValues.email.trim().toLowerCase(),
+
+          // FULL INTERNATIONAL NUMBER
+          phone: formValues.phone,
+
+          serviceId: Number(formValues.serviceId),
+          preferredStartTime: formValues.preferredStartTime,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || "Unable to resend OTP."
+        );
+      }
+
+      setVerificationId(data.verificationId);
+
+      setEmailOtp("");
+      setPhoneOtp("");
+
+      setStatus("idle");
+
+      startResendCooldown();
+    } catch (error) {
+      setStatus("error");
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unable to resend OTP."
+      );
+    }
+  }
+
+  /* =========================================================
+     FORM SUBMIT
+  ========================================================= */
+
+  async function handleSubmit(
+    event: React.FormEvent<HTMLFormElement>
+  ) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+
+    const fullPhone = getFullPhoneNumber();
+
+    const values = {
+      name: String(formData.get("name") ?? "").trim(),
+
+      email: String(formData.get("email") ?? "").trim(),
+
+      phone: fullPhone,
+
+      serviceId: String(
+        formData.get("serviceId") ?? ""
+      ),
+
+      preferredStartTime: String(
+        formData.get("preferredStartTime") ?? ""
+      ),
+
+      website: String(
+        formData.get("website") ?? ""
+      ).trim(),
+    };
+
+    // Temporarily store the complete form values
+    setFormValues(values);
+
+    /* VALIDATION */
+
+    if (
+      values.name.length < 2 ||
+      values.name.length > 100
+    ) {
+      setError("Please enter your full name.");
+      setStatus("error");
+      return;
+    }
+
+    if (
+      !values.email ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        values.email
+      )
+    ) {
+      setError("Please enter a valid email address.");
+      setStatus("error");
+      return;
+    }
+
+    const phoneDigits = phoneNumber.replace(/\D/g, "");
+
+    if (
+      phoneDigits.length < 6 ||
+      phoneDigits.length > 15
+    ) {
+      setError("Please enter a valid contact number.");
+      setStatus("error");
+      return;
+    }
+
+    if (!values.serviceId) {
+      setError("Please select a service.");
+      setStatus("error");
+      return;
+    }
+
+    if (!values.preferredStartTime) {
+      setError(
+        "Please select your preferred start time."
+      );
+      setStatus("error");
+      return;
+    }
+
+    setError("");
+    setStatus("sendingOtp");
+
+    try {
+      const response = await fetch("/api/otp/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email.toLowerCase(),
+
+          // +91 + phone number
+          phone: values.phone,
+
+          serviceId: Number(values.serviceId),
+          preferredStartTime:
+            values.preferredStartTime,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            "Unable to send verification OTP."
+        );
+      }
+
+      setVerificationId(data.verificationId);
+
+      setEmailOtp("");
+      setPhoneOtp("");
+
+      setStep("otp");
+      setStatus("idle");
+
+      startResendCooldown();
+    } catch (error) {
+      setStatus("error");
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while sending OTP."
       );
     }
   }
@@ -124,157 +521,367 @@ export default function QuickEnquiryForm({ services }: Props) {
         />
 
         <div className="relative z-10">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-lime-600">
-            Free Consultation
-          </p>
-
-          <h2 className="mt-3 text-3xl font-black leading-tight text-black sm:text-4xl">
-            Let&apos;s Start Your Project
-          </h2>
-
-          <p className="mt-3 text-sm leading-6 text-black/55">
-            Share a few details and our team will contact you shortly.
-          </p>
-
-          <form onSubmit={handleSubmit} className="mt-7 space-y-4">
-            <div
-              aria-hidden="true"
-              className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
-            >
-              <label htmlFor="website">Website</label>
-
-              <input
-                id="website"
-                name="website"
-                type="text"
-                tabIndex={-1}
-                autoComplete="off"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="name"
-                className="mb-2 block text-sm font-bold text-black"
-              >
-                Client Name
-              </label>
-
-              <input
-                id="name"
-                name="name"
-                type="text"
-                required
-                maxLength={100}
-                autoComplete="name"
-                placeholder="Enter your full name"
-                className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-black outline-none transition placeholder:text-black/35 focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="phone"
-                className="mb-2 block text-sm font-bold text-black"
-              >
-                Phone / WhatsApp Number
-              </label>
-
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                required
-                maxLength={20}
-                autoComplete="tel"
-                inputMode="tel"
-                placeholder="Enter your contact number"
-                className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-black outline-none transition placeholder:text-black/35 focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="serviceId"
-                className="mb-2 block text-sm font-bold text-black"
-              >
-                Service Required
-              </label>
-
-              <select
-                id="serviceId"
-                name="serviceId"
-                required
-                defaultValue=""
-                className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-black outline-none transition focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
-              >
-                <option value="" disabled>
-                  Select a service
-                </option>
-
-                {services.map((service) => (
-                  <option key={service.id} value={service.id}>
-                    {service.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor="preferredStartTime"
-                className="mb-2 block text-sm font-bold text-black"
-              >
-                Preferred Start Time
-              </label>
-
-              <select
-                id="preferredStartTime"
-                name="preferredStartTime"
-                required
-                defaultValue=""
-                className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-black outline-none transition focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
-              >
-                <option value="" disabled>
-                  Select preferred start time
-                </option>
-
-                {startTimeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {error && (
-              <p
-                role="alert"
-                className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
-              >
-                {error}
+          {step === "form" ? (
+            <>
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-lime-600">
+                Free Consultation
               </p>
-            )}
 
-            <button
-              type="submit"
-              disabled={status === "submitting"}
-              className="group flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-lime-400 px-6 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-all duration-300 hover:-translate-y-1 hover:bg-lime-300 hover:shadow-[0_16px_40px_rgba(163,230,53,0.25)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
-            >
-              {status === "submitting"
-                ? "Submitting..."
-                : "Request a Free Consultation"}
+              <h2 className="mt-3 text-3xl font-black leading-tight text-black sm:text-4xl">
+                Let&apos;s Start Your Project
+              </h2>
 
-              {status !== "submitting" && (
-                <ArrowUpRight className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
-              )}
-            </button>
+              <p className="mt-3 text-sm leading-6 text-black/55">
+                Share a few details and our team will
+                contact you shortly.
+              </p>
 
-            <p className="flex items-start justify-center gap-2 text-center text-xs leading-5 text-black/45">
-              <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
-              Your information is secure and will only be used to discuss your
-              requirements.
-            </p>
-          </form>
+              <form
+                onSubmit={handleSubmit}
+                className="mt-7 space-y-4"
+              >
+                {/* HONEYPOT */}
+
+                <div
+                  aria-hidden="true"
+                  className="absolute left-[-9999px] top-auto h-px w-px overflow-hidden"
+                >
+                  <label htmlFor="website">
+                    Website
+                  </label>
+
+                  <input
+                    id="website"
+                    name="website"
+                    type="text"
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
+
+                {/* NAME */}
+
+                <div>
+                  <label
+                    htmlFor="name"
+                    className="mb-2 block text-sm font-bold text-black"
+                  >
+                    Client Name
+                  </label>
+
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    required
+                    maxLength={100}
+                    autoComplete="name"
+                    placeholder="Enter your full name"
+                    className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-black outline-none transition placeholder:text-black/35 focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
+                  />
+                </div>
+
+                {/* EMAIL */}
+
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="mb-2 block text-sm font-bold text-black"
+                  >
+                    Email Address
+                  </label>
+
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    placeholder="Enter your email address"
+                    className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-black outline-none transition placeholder:text-black/35 focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
+                  />
+                </div>
+
+                {/* PHONE */}
+
+                <div>
+                  <label
+                    htmlFor="phone"
+                    className="mb-2 block text-sm font-bold text-black"
+                  >
+                    Phone / WhatsApp Number
+                  </label>
+
+                  <PhoneInput
+                    value={phoneNumber}
+                    countryCode={countryCode}
+                    onCountryChange={setCountryCode}
+                    onPhoneChange={setPhoneNumber}
+                  />
+                </div>
+
+                {/* SERVICE */}
+
+                <div>
+                  <label
+                    htmlFor="serviceId"
+                    className="mb-2 block text-sm font-bold text-black"
+                  >
+                    Service Required
+                  </label>
+
+                  <select
+                    id="serviceId"
+                    name="serviceId"
+                    required
+                    defaultValue=""
+                    className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-black outline-none transition focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
+                  >
+                    <option value="" disabled>
+                      Select a service
+                    </option>
+
+                    {services.map((service) => (
+                      <option
+                        key={service.id}
+                        value={service.id}
+                      >
+                        {service.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* START TIME */}
+
+                <div>
+                  <label
+                    htmlFor="preferredStartTime"
+                    className="mb-2 block text-sm font-bold text-black"
+                  >
+                    Preferred Start Time
+                  </label>
+
+                  <select
+                    id="preferredStartTime"
+                    name="preferredStartTime"
+                    required
+                    defaultValue=""
+                    className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-black outline-none transition focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
+                  >
+                    <option value="" disabled>
+                      Select preferred start time
+                    </option>
+
+                    {startTimeOptions.map(
+                      (option) => (
+                        <option
+                          key={option.value}
+                          value={option.value}
+                        >
+                          {option.label}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+
+                {/* ERROR */}
+
+                {error && (
+                  <p
+                    role="alert"
+                    className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+                  >
+                    {error}
+                  </p>
+                )}
+
+                {/* SEND OTP */}
+
+                <button
+                  type="submit"
+                  disabled={
+                    status === "sendingOtp"
+                  }
+                  className="group flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-lime-400 px-6 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-all duration-300 hover:-translate-y-1 hover:bg-lime-300 hover:shadow-[0_16px_40px_rgba(163,230,53,0.25)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                >
+                  {status === "sendingOtp"
+                    ? "Sending OTP..."
+                    : "Verify & Continue"}
+
+                  {status !== "sendingOtp" && (
+                    <ArrowUpRight className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
+                  )}
+                </button>
+
+                <p className="flex items-start justify-center gap-2 text-center text-xs leading-5 text-black/45">
+                  <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
+
+                  Your information is secure and will only
+                  be used to discuss your requirements.
+                </p>
+              </form>
+            </>
+          ) : (
+            <>
+              {/* OTP SCREEN */}
+
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-lime-400/15">
+                <ShieldCheck className="h-7 w-7 text-lime-600" />
+              </div>
+
+              <p className="mt-6 text-xs font-black uppercase tracking-[0.28em] text-lime-600">
+                Verify Your Details
+              </p>
+
+              <h2 className="mt-3 text-3xl font-black leading-tight text-black sm:text-4xl">
+                Almost There!
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-black/55">
+                We&apos;ve sent verification codes to your
+                email and phone number.
+              </p>
+
+              <div className="mt-7 space-y-5">
+                {/* EMAIL OTP */}
+
+                <div>
+                  <label
+                    htmlFor="emailOtp"
+                    className="mb-2 block text-sm font-bold text-black"
+                  >
+                    Email OTP
+                  </label>
+
+                  <input
+                    id="emailOtp"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    value={emailOtp}
+                    onChange={(event) =>
+                      setEmailOtp(
+                        event.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 6)
+                      )
+                    }
+                    placeholder="Enter 6-digit email OTP"
+                    className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-center text-lg font-bold tracking-[0.35em] text-black outline-none transition placeholder:text-sm placeholder:tracking-normal placeholder:text-black/35 focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
+                  />
+                </div>
+
+                {/* PHONE OTP */}
+
+                <div>
+                  <label
+                    htmlFor="phoneOtp"
+                    className="mb-2 block text-sm font-bold text-black"
+                  >
+                    Phone OTP
+                  </label>
+
+                  <input
+                    id="phoneOtp"
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={phoneOtp}
+                    onChange={(event) =>
+                      setPhoneOtp(
+                        event.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 6)
+                      )
+                    }
+                    placeholder="Enter 6-digit phone OTP"
+                    className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-center text-lg font-bold tracking-[0.35em] text-black outline-none transition placeholder:text-sm placeholder:tracking-normal placeholder:text-black/35 focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
+                  />
+                </div>
+
+                {/* ERROR */}
+
+                {error && (
+                  <p
+                    role="alert"
+                    className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+                  >
+                    {error}
+                  </p>
+                )}
+
+                {/* VERIFY */}
+
+                <button
+                  type="button"
+                  onClick={verifyOtp}
+                  disabled={
+                    status === "verifying" ||
+                    status === "submitting"
+                  }
+                  className="group flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-lime-400 px-6 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-all duration-300 hover:-translate-y-1 hover:bg-lime-300 hover:shadow-[0_16px_40px_rgba(163,230,53,0.25)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                >
+                  {status === "verifying"
+                    ? "Verifying..."
+                    : status === "submitting"
+                      ? "Submitting..."
+                      : "Verify & Submit"}
+
+                  {status !== "verifying" &&
+                    status !== "submitting" && (
+                      <ArrowUpRight className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
+                    )}
+                </button>
+
+                {/* RESEND */}
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={resendOtp}
+                    disabled={
+                      resendCooldown > 0 ||
+                      status === "sendingOtp" ||
+                      status === "verifying" ||
+                      status === "submitting"
+                    }
+                    className="text-sm font-bold text-black underline decoration-black/20 underline-offset-4 transition hover:text-lime-600 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {status === "sendingOtp"
+                      ? "Sending..."
+                      : resendCooldown > 0
+                        ? `Resend OTP in ${resendCooldown}s`
+                        : "Resend OTP"}
+                  </button>
+                </div>
+
+                {/* BACK */}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("form");
+                    setError("");
+                    setEmailOtp("");
+                    setPhoneOtp("");
+                  }}
+                  className="w-full text-center text-xs font-bold text-black/45 transition hover:text-black"
+                >
+                  ← Edit your details
+                </button>
+
+                <p className="flex items-start justify-center gap-2 text-center text-xs leading-5 text-black/45">
+                  <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
+
+                  Your contact details are verified securely
+                  before your enquiry is submitted.
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

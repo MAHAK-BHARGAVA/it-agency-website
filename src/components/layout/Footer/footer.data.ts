@@ -39,7 +39,7 @@ export const resourceLinks: FooterColumnType = {
     },
     {
       label: "Terms & Conditions",
-      href: "/terms-and-conditions",
+      href: "/terms",
     },
   ],
 };

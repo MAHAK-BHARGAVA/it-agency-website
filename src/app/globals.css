@@ -1,40 +1,40 @@
 @import "tailwindcss";
 
-:root{
-  --background:#0b0b0b;
-  --foreground:#ffffff;
-  --primary:#f97316;
+:root {
+  --background: #0b0b0b;
+  --foreground: #ffffff;
+  --primary: #f97316;
 }
 
-html{
-  scroll-behavior:smooth;
+html {
+  scroll-behavior: smooth;
 }
 
-body{
-  background:var(--background);
-  color:var(--foreground);
-  overflow-x:hidden;
+body {
+  background: var(--background);
+  color: var(--foreground);
+  overflow-x: hidden;
 }
 
-*{
-  box-sizing:border-box;
+* {
+  box-sizing: border-box;
 }
 
-::-webkit-scrollbar{
-  width:8px;
+::-webkit-scrollbar {
+  width: 8px;
 }
 
-::-webkit-scrollbar-thumb{
-  background:#444;
+::-webkit-scrollbar-thumb {
+  background: #444;
 }
 
-::-webkit-scrollbar-track{
-  background:#111;
+::-webkit-scrollbar-track {
+  background: #111;
 }
 
-::selection{
-  background:#f97316;
-  color:white;
+::selection {
+  background: #f97316;
+  color: white;
 }
 
 body {
@@ -50,11 +50,16 @@ h6 {
   font-family: var(--font-secondary);
 }
 
+/* =========================================================
+   FLOAT ANIMATION
+========================================================= */
+
 @keyframes float {
   0%,
   100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-14px);
   }
@@ -63,6 +68,10 @@ h6 {
 .float {
   animation: float 5s ease-in-out infinite;
 }
+
+/* =========================================================
+   TECH STACK
+========================================================= */
 
 @keyframes tech-stack-scroll {
   from {
@@ -88,6 +97,10 @@ h6 {
     animation: none;
   }
 }
+
+/* =========================================================
+   CRM DATEPICKER
+========================================================= */
 
 .crm-datepicker {
   border: 1px solid #ddd9e8 !important;
@@ -132,4 +145,456 @@ h6 {
   li.react-datepicker__time-list-item--selected {
   background: #4648d4;
   color: white;
+}
+
+/* =========================================================
+   BLOG RICH TEXT EDITOR
+========================================================= */
+
+.tiptap-blog-editor {
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.tiptap-blog-editor p {
+  margin: 0.75rem 0;
+}
+
+.tiptap-blog-editor p:first-child {
+  margin-top: 0;
+}
+
+.tiptap-blog-editor p:last-child {
+  margin-bottom: 0;
+}
+
+/* Headings */
+
+.tiptap-blog-editor h1 {
+  margin: 2rem 0 1rem;
+  font-size: 2rem;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.tiptap-blog-editor h2 {
+  margin: 1.75rem 0 0.9rem;
+  font-size: 1.65rem;
+  line-height: 1.25;
+  font-weight: 800;
+}
+
+.tiptap-blog-editor h3 {
+  margin: 1.5rem 0 0.75rem;
+  font-size: 1.35rem;
+  line-height: 1.3;
+  font-weight: 750;
+}
+
+.tiptap-blog-editor h4 {
+  margin: 1.25rem 0 0.65rem;
+  font-size: 1.1rem;
+  line-height: 1.35;
+  font-weight: 700;
+}
+
+/* Lists */
+
+.tiptap-blog-editor ul {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.tiptap-blog-editor ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+  list-style-type: decimal;
+}
+
+.tiptap-blog-editor li {
+  margin: 0.3rem 0;
+}
+
+/* Blockquote */
+
+.tiptap-blog-editor blockquote {
+  margin: 1.25rem 0;
+  border-left: 4px solid #6466e8;
+  padding-left: 1rem;
+  color: rgb(27 27 35 / 65%);
+  font-style: italic;
+}
+
+/* Code */
+
+.tiptap-blog-editor pre {
+  margin: 1.25rem 0;
+  overflow-x: auto;
+  border-radius: 0.75rem;
+  background: #18181b;
+  padding: 1rem;
+  color: #f4f4f5;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.tiptap-blog-editor code {
+  border-radius: 0.35rem;
+  background: rgb(0 0 0 / 6%);
+  padding: 0.15rem 0.35rem;
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    Consolas,
+    "Liberation Mono",
+    "Courier New",
+    monospace;
+  font-size: 0.9em;
+}
+
+.tiptap-blog-editor pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* Horizontal rule */
+
+.tiptap-blog-editor hr {
+  margin: 2rem 0;
+  border: 0;
+  border-top: 1px solid rgb(0 0 0 / 12%);
+}
+
+/* Links */
+
+.tiptap-blog-editor a {
+  color: #4648d4;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.tiptap-blog-editor a:hover {
+  color: #84a900;
+}
+
+/* =========================================================
+   TIPTAP IMAGE
+========================================================= */
+
+/*
+  IMPORTANT:
+  Do NOT force width: 100%.
+  Tiptap's image resize extension needs the image's
+  actual width/height attributes to remain visible.
+*/
+
+.tiptap-blog-editor img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  cursor: pointer;
+  border-radius: 16px;
+}
+
+/* Selected image */
+
+.tiptap-blog-editor img.ProseMirror-selectednode {
+  outline: 3px solid rgb(100 102 232 / 30%);
+  outline-offset: 2px;
+}
+
+/* Image alignment */
+
+.tiptap-blog-editor img[data-align="left"] {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.tiptap-blog-editor img[data-align="center"] {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.tiptap-blog-editor img[data-align="right"] {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/*
+  DO NOT add [data-resize-handle] CSS here.
+  Tiptap's image extension manages its own resize UI.
+*/
+
+/* Highlight */
+
+.tiptap-blog-editor mark {
+  border-radius: 0.2rem;
+  padding: 0.05rem 0.15rem;
+}
+
+/* Placeholder */
+
+.tiptap-blog-editor p.is-editor-empty:first-child::before {
+  pointer-events: none;
+  float: left;
+  height: 0;
+  color: rgb(0 0 0 / 30%);
+  content: attr(data-placeholder);
+}
+
+.tiptap-blog-editor:focus {
+  outline: none;
+}
+
+/* =========================================================
+   BLOG PUBLIC CONTENT
+========================================================= */
+
+.blog-content h1 {
+  margin-top: 3.5rem;
+  margin-bottom: 2rem;
+  font-size: 2.25rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+
+.blog-content h2 {
+  margin-top: 3.5rem;
+  margin-bottom: 1.5rem;
+  font-size: 1.875rem;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.blog-content h3 {
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.blog-content h4 {
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.blog-content p {
+  margin-bottom: 1.75rem;
+}
+
+.blog-content ul {
+  margin-bottom: 2rem;
+  padding-left: 1.5rem;
+  list-style-type: disc;
+}
+
+.blog-content ol {
+  margin-bottom: 2rem;
+  padding-left: 1.5rem;
+  list-style-type: decimal;
+}
+
+.blog-content li {
+  padding-left: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.blog-content blockquote {
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+  border-left: 4px solid #b7f000;
+  background: white;
+  padding: 1.5rem 1.75rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+  font-style: italic;
+  line-height: 2rem;
+  color: #252725;
+}
+
+.blog-content a {
+  font-weight: 600;
+  color: #4648d4;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.blog-content a:hover {
+  color: #b7f000;
+}
+
+/* =========================================================
+   PUBLIC BLOG IMAGES
+========================================================= */
+
+.blog-content > img {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+  border-radius: 28px;
+}
+
+/* Public image alignment */
+
+.blog-content > img[data-align="left"] {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.blog-content > img[data-align="center"] {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.blog-content > img[data-align="right"] {
+  margin-left: auto;
+  margin-right: 0;
+}
+
+/* =========================================================
+   PUBLIC CODE BLOCK
+========================================================= */
+
+.blog-content > pre {
+  margin-top: 2.5rem;
+  margin-bottom: 2.5rem;
+  overflow-x: auto;
+  border-radius: 24px;
+  background: #181a1b;
+  padding: 1.5rem;
+  font-size: 0.875rem;
+  line-height: 1.75rem;
+  color: white;
+}
+
+.blog-content > pre code {
+  background: transparent;
+  padding: 0;
+  color: white;
+}
+
+/* =========================================================
+   PUBLIC INLINE CODE
+========================================================= */
+
+.blog-content > code {
+  border-radius: 4px;
+  background: #e9e9e3;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.9em;
+  color: #292b29;
+}
+
+/* =========================================================
+   PUBLIC HORIZONTAL DIVIDER
+========================================================= */
+
+.blog-content > hr {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+  border: 0;
+  border-top: 1px solid #dcdcd6;
+}
+
+/* =========================================================
+   PUBLIC TEXT FORMATTING
+========================================================= */
+
+.blog-content strong {
+  font-weight: 700;
+}
+
+.blog-content em {
+  font-style: italic;
+}
+
+.blog-content u {
+  text-decoration: underline;
+}
+
+.blog-content s {
+  text-decoration: line-through;
+}
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 640px) {
+  .blog-content {
+    font-size: 16px;
+    line-height: 1.8;
+  }
+
+  .blog-content h1 {
+    font-size: 2rem;
+  }
+
+  .blog-content h2 {
+    font-size: 1.75rem;
+  }
+
+  .blog-content h3 {
+    font-size: 1.4rem;
+  }
+
+  .blog-content > img {
+    width: auto;
+    max-width: 100%;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-radius: 20px;
+  }
+}
+
+
+/* ================================
+   Navbar Dropdown Scrollbar
+   ================================ */
+
+.navbar-dropdown-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+}
+
+.navbar-dropdown-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.navbar-dropdown-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.navbar-dropdown-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 999px;
+}
+
+.navbar-dropdown-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.45);
 }
