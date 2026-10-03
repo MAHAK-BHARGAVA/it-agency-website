@@ -2,66 +2,48 @@ import Link from "next/link";
 import {
   ArrowRight,
   Check,
-  FileText,
+  LockKeyhole,
   ShieldCheck,
 } from "lucide-react";
 
 const sections = [
   {
-    id: "acceptance",
+    id: "information",
     number: "01",
-    title: "Acceptance of Terms",
+    title: "Information We Collect",
     content: (
       <>
         <p>
-          By accessing or using the Soclthry website and services, you agree
-          to be bound by these Terms & Conditions. If you do not agree with
-          these terms, please do not use our website or services.
+          When you interact with Soclthry, we may collect information that you
+          voluntarily provide, such as your name, email address, phone number,
+          company details, and project requirements.
         </p>
 
         <p>
-          These terms apply to all visitors, users, clients, and other
-          individuals who access or use our services.
+          We may also collect basic technical information such as browser type,
+          device information, IP address, and website usage data.
         </p>
       </>
     ),
   },
   {
-    id: "services",
+    id: "usage",
     number: "02",
-    title: "Our Services",
+    title: "How We Use Your Information",
     content: (
       <>
         <p>
-          Soclthry provides digital and technology services including website
-          development, software solutions, digital marketing, SEO, branding,
-          AI automation, and related technology services.
-        </p>
-
-        <p>
-          The exact scope, timeline, deliverables, and pricing of a project
-          will depend on the agreement between Soclthry and the client.
-        </p>
-      </>
-    ),
-  },
-  {
-    id: "website-use",
-    number: "03",
-    title: "Use of Our Website",
-    content: (
-      <>
-        <p>
-          You agree to use this website only for lawful purposes and in a way
-          that does not infringe upon the rights of others.
+          Information collected through our website may be used to respond to
+          enquiries, provide requested services, communicate with you, and
+          improve our website and services.
         </p>
 
         <ul className="mt-6 space-y-4">
           {[
-            "Do not attempt to gain unauthorized access to our systems.",
-            "Do not use the website for fraudulent or unlawful activities.",
-            "Do not knowingly introduce malicious software or harmful code.",
-            "Do not interfere with the security or operation of the website.",
+            "Respond to enquiries and requests.",
+            "Provide and manage our services.",
+            "Communicate about projects and service updates.",
+            "Improve our website, services, and user experience.",
           ].map((item) => (
             <li key={item} className="flex gap-3">
               <Check className="mt-1 h-4 w-4 shrink-0 text-[#B7F000]" />
@@ -73,96 +55,129 @@ const sections = [
     ),
   },
   {
-    id: "intellectual-property",
+    id: "protection",
+    number: "03",
+    title: "How We Protect Your Information",
+    content: (
+      <>
+        <p>
+          We take reasonable technical and organizational measures to protect
+          the information we handle against unauthorized access, alteration,
+          disclosure, or destruction.
+        </p>
+
+        <p>
+          However, no method of transmission or electronic storage can be
+          guaranteed to be completely secure.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "sharing",
     number: "04",
-    title: "Intellectual Property",
+    title: "Information Sharing",
     content: (
       <>
         <p>
-          Unless otherwise agreed in writing, the content, branding, design,
-          graphics, text, code, and other materials available on this website
-          are owned by or licensed to Soclthry.
+          Soclthry does not sell your personal information. Information may be
+          shared with trusted service providers when necessary to operate our
+          business, provide services, or process requests.
         </p>
 
         <p>
-          You may not reproduce, distribute, modify, publish, or commercially
-          exploit our materials without prior written permission.
+          We may also disclose information where required by applicable law or
+          to protect our legal rights and the security of our services.
         </p>
       </>
     ),
   },
   {
-    id: "client-responsibilities",
+    id: "cookies",
     number: "05",
-    title: "Client Responsibilities",
+    title: "Cookies & Analytics",
     content: (
       <>
         <p>
-          Clients are responsible for providing accurate information,
-          materials, credentials, approvals, and feedback required for their
-          projects.
+          Our website may use cookies and similar technologies to remember
+          preferences, understand website usage, and improve the overall user
+          experience.
         </p>
 
         <p>
-          Delays caused by missing information, delayed approvals, or
-          incomplete client requirements may affect project timelines.
+          You can manage or disable cookies through your browser settings.
+          Some website functionality may be affected when cookies are disabled.
         </p>
       </>
     ),
   },
   {
-    id: "payments",
+    id: "third-party",
     number: "06",
-    title: "Payments & Projects",
+    title: "Third-Party Services",
     content: (
       <>
         <p>
-          Project pricing, payment schedules, milestones, and deliverables
-          will be communicated and agreed upon before or during the engagement.
+          Our website or services may use third-party platforms and tools for
+          purposes such as analytics, communication, hosting, payments, or
+          media management.
         </p>
 
         <p>
-          Additional work outside the agreed scope may require additional
-          charges and a separate agreement.
+          These third parties may process information according to their own
+          privacy policies and terms.
         </p>
       </>
     ),
   },
   {
-    id: "liability",
+    id: "retention",
     number: "07",
-    title: "Limitation of Liability",
+    title: "Data Retention",
     content: (
       <>
         <p>
-          Soclthry makes reasonable efforts to provide reliable services and
-          maintain the availability of its website. However, we do not
-          guarantee that the website or services will always be uninterrupted,
-          error-free, or completely secure.
+          We retain information only for as long as reasonably necessary for
+          the purposes for which it was collected, to provide our services,
+          maintain business records, or comply with applicable legal
+          obligations.
+        </p>
+      </>
+    ),
+  },
+  {
+    id: "rights",
+    number: "08",
+    title: "Your Rights",
+    content: (
+      <>
+        <p>
+          Depending on applicable law, you may have rights regarding your
+          personal information, including requesting access, correction, or
+          deletion of certain information.
         </p>
 
         <p>
-          To the extent permitted by applicable law, Soclthry will not be
-          responsible for indirect, incidental, or consequential losses arising
-          from the use of our website or services.
+          To make a privacy-related request, please contact our team using the
+          information provided on our Contact page.
         </p>
       </>
     ),
   },
   {
     id: "changes",
-    number: "08",
-    title: "Changes to These Terms",
+    number: "09",
+    title: "Changes to This Privacy Policy",
     content: (
       <>
         <p>
-          We may update these Terms & Conditions from time to time to reflect
-          changes to our services, business practices, or applicable
+          We may update this Privacy Policy from time to time to reflect
+          changes in our services, technology, business practices, or applicable
           requirements.
         </p>
 
         <p>
-          Updated terms will be published on this page with a revised
+          Any updated version will be published on this page with a revised
           effective date.
         </p>
       </>
@@ -170,13 +185,13 @@ const sections = [
   },
   {
     id: "contact",
-    number: "09",
+    number: "10",
     title: "Contact Us",
     content: (
       <>
         <p>
-          If you have questions about these Terms & Conditions, you can contact
-          our team.
+          If you have questions about this Privacy Policy or how Soclthry
+          handles information, please contact our team.
         </p>
 
         <div className="mt-8">
@@ -193,7 +208,7 @@ const sections = [
   },
 ];
 
-export default function TermsPage() {
+export default function PrivacyPolicyPage() {
   return (
     <main className="min-h-screen bg-[#F5F5F0] text-[#181A1B]">
 
@@ -202,7 +217,7 @@ export default function TermsPage() {
       ========================================================= */}
 
       <section className="relative overflow-hidden bg-[#111313] text-white">
-        {/* Decorative grid */}
+        {/* Grid */}
         <div className="pointer-events-none absolute inset-0 opacity-[0.08]">
           <div
             className="absolute inset-0"
@@ -214,20 +229,20 @@ export default function TermsPage() {
           />
         </div>
 
-        {/* Lime glow */}
+        {/* Glow */}
         <div className="pointer-events-none absolute -right-32 top-20 h-96 w-96 rounded-full bg-[#B7F000]/10 blur-3xl" />
 
         <div className="relative mx-auto max-w-[1400px] px-6 pb-24 pt-12 sm:px-10 lg:px-16 lg:pb-32 lg:pt-16">
-          
-          {/* Top label */}
+
+          {/* Top */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15">
-                <FileText className="h-4 w-4 text-[#B7F000]" />
+                <LockKeyhole className="h-4 w-4 text-[#B7F000]" />
               </div>
 
               <span className="text-xs font-bold uppercase tracking-[0.25em] text-white/50">
-                Legal
+                Privacy
               </span>
             </div>
 
@@ -236,30 +251,30 @@ export default function TermsPage() {
             </span>
           </div>
 
-          {/* Hero content */}
+          {/* Hero */}
           <div className="mt-24 max-w-6xl lg:mt-32">
             <p className="mb-6 text-sm font-medium uppercase tracking-[0.25em] text-[#B7F000]">
-              Terms & Conditions
+              Privacy Policy
             </p>
 
             <h1 className="text-[clamp(4rem,11vw,10rem)] font-black leading-[0.82] tracking-[-0.07em]">
-              Terms
+              Your
               <br />
-              <span className="text-white/30">&amp;</span>{" "}
-              Conditions<span className="text-[#B7F000]">.</span>
+              <span className="text-white/30">privacy</span>
+              <span className="text-[#B7F000]">.</span>
             </h1>
           </div>
 
-          {/* Hero bottom */}
+          {/* Bottom */}
           <div className="mt-20 flex flex-col justify-between gap-8 border-t border-white/10 pt-8 sm:flex-row sm:items-end">
             <p className="max-w-xl text-lg leading-8 text-white/55">
-              The rules, responsibilities, and guidelines that govern your use
-              of the Soclthry website and services.
+              How Soclthry collects, uses, protects, and handles information
+              when you interact with our website and services.
             </p>
 
             <div className="flex items-center gap-3 text-sm text-white/40">
               <ShieldCheck className="h-5 w-5 text-[#B7F000]" />
-              <span>Clear. Transparent. Straightforward.</span>
+              <span>Privacy matters.</span>
             </div>
           </div>
         </div>
@@ -295,16 +310,19 @@ export default function TermsPage() {
             </nav>
           </aside>
 
-          {/* Main legal content */}
+          {/* Main */}
           <div className="max-w-4xl">
+
+            {/* Intro */}
             <div className="mb-20 border-b border-black/10 pb-12">
               <p className="max-w-3xl text-xl leading-9 text-[#555750] sm:text-2xl sm:leading-10">
-                These Terms & Conditions explain the conditions under which you
-                may access and use the Soclthry website and services. Please
-                read them carefully before using our services.
+                At Soclthry, we respect your privacy and aim to be transparent
+                about how information is collected and used when you interact
+                with our website and services.
               </p>
             </div>
 
+            {/* Sections */}
             <div>
               {sections.map((section) => (
                 <section
@@ -313,7 +331,7 @@ export default function TermsPage() {
                   className="scroll-mt-20 border-b border-black/10 py-12 first:pt-0 last:border-b-0"
                 >
                   <div className="grid gap-8 md:grid-cols-[90px_1fr]">
-                    
+
                     {/* Number */}
                     <div>
                       <span className="font-mono text-sm font-bold text-[#B7F000]">
@@ -346,17 +364,18 @@ export default function TermsPage() {
 
       <section className="bg-[#B7F000]">
         <div className="mx-auto max-w-[1400px] px-6 py-20 sm:px-10 lg:px-16 lg:py-28">
+
           <div className="flex flex-col justify-between gap-12 lg:flex-row lg:items-end">
-            
+
             <div>
               <p className="text-xs font-black uppercase tracking-[0.25em] text-black/50">
-                Questions?
+                Need clarity?
               </p>
 
               <h2 className="mt-5 max-w-3xl text-5xl font-black leading-[0.95] tracking-[-0.05em] sm:text-6xl lg:text-8xl">
                 Let&apos;s talk
                 <br />
-                about it.
+                about privacy.
               </h2>
             </div>
 

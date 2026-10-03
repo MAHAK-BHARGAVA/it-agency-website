@@ -66,7 +66,7 @@ export default function Footer({
     title: "Locations",
     links: data.cities.map((city) => ({
       label: city.name,
-      href: `/locations/${city.slug}`,
+      href: `/${city.slug}`,
     })),
   };
 
@@ -213,7 +213,7 @@ export default function Footer({
             </Link>
 
             <Link
-              href="/terms-and-conditions"
+              href="/terms"
               className="transition-colors hover:text-lime-400"
             >
               Terms

@@ -235,6 +235,34 @@ model Lead {
   @@map("leads")
 }
 
+model LeadVerification {
+  id                  String   @id @default(cuid())
+  name                String
+  email               String
+  phone               String
+  serviceId           Int?
+  city                String?
+  message             String?  @db.Text
+  preferredStartTime  String?
+
+  emailOtpHash        String
+  phoneOtpHash        String
+
+  emailVerified       Boolean  @default(false)
+  phoneVerified       Boolean  @default(false)
+
+  attempts            Int      @default(0)
+  lastSentAt           DateTime?
+  expiresAt            DateTime
+
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@index([email])
+  @@index([phone])
+  @@index([expiresAt])
+}
+
 model LeadActivity {
   id          Int              @id @default(autoincrement())
   leadId      Int

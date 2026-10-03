@@ -571,3 +571,30 @@ h6 {
     border-radius: 20px;
   }
 }
+
+
+/* ================================
+   Navbar Dropdown Scrollbar
+   ================================ */
+
+.navbar-dropdown-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.25) transparent;
+}
+
+.navbar-dropdown-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.navbar-dropdown-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.navbar-dropdown-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 999px;
+}
+
+.navbar-dropdown-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.45);
+}
