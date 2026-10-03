@@ -40,12 +40,16 @@ export default function PhoneInput({
   dark = false,
 }: Props) {
   const selectedCountry =
-    countries.find((country) => country.dialCode === countryCode) ??
-    countries[0];
+    countries.find(
+      (country) =>
+        country.dialCode === countryCode
+    ) ?? countries[0];
 
   const [isOpen, setIsOpen] = useState(false);
 
-  function handleCountryChange(country: Country) {
+  function handleCountryChange(
+    country: Country
+  ) {
     onCountryChange(country.dialCode);
     onPhoneChange("");
     setIsOpen(false);
@@ -55,26 +59,47 @@ export default function PhoneInput({
     const digits = input.replace(/\D/g, "");
 
     onPhoneChange(
-      digits.slice(0, selectedCountry.maxLength)
+      digits.slice(
+        0,
+        selectedCountry.maxLength
+      )
     );
   }
 
   return (
     <div className="relative flex h-14 w-full overflow-visible">
-      {/* COUNTRY CODE */}
+      {/* COUNTRY SELECTOR */}
 
       <button
         type="button"
-        onClick={() => setIsOpen((previous) => !previous)}
-        className={`flex min-w-[105px] items-center justify-between rounded-l-2xl border px-4 text-sm font-bold transition ${
+        onClick={() =>
+          setIsOpen((previous) => !previous)
+        }
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        className={`flex min-w-[125px] items-center justify-between gap-2 rounded-l-2xl border px-4 text-sm font-bold transition ${
           dark
             ? "border-white/10 bg-white/5 text-white hover:bg-white/10"
             : "border-black/10 bg-[#f6f6f2] text-black hover:bg-white"
         }`}
       >
-        <span>{selectedCountry.dialCode}</span>
+        <span className="flex items-center gap-2">
+          {/* ACTUAL COUNTRY FLAG */}
 
-        <span className="ml-2 text-[10px] opacity-50">
+          <span
+            className={`fi fi-${selectedCountry.code.toLowerCase()} text-base`}
+          />
+
+          <span>
+            {selectedCountry.dialCode}
+          </span>
+        </span>
+
+        <span
+          className={`text-[10px] opacity-50 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
+        >
           ▼
         </span>
       </button>
@@ -83,7 +108,8 @@ export default function PhoneInput({
 
       {isOpen && (
         <div
-          className={`absolute left-0 top-[62px] z-50 max-h-72 w-[280px] overflow-y-auto rounded-2xl border p-2 shadow-2xl ${
+          role="listbox"
+          className={`absolute left-0 top-[62px] z-50 max-h-72 w-[320px] overflow-y-auto rounded-2xl border p-2 shadow-2xl ${
             dark
               ? "border-white/10 bg-[#171717] text-white"
               : "border-black/10 bg-white text-black"
@@ -93,14 +119,33 @@ export default function PhoneInput({
             <button
               key={`${country.code}-${country.dialCode}`}
               type="button"
-              onClick={() => handleCountryChange(country)}
+              role="option"
+              aria-selected={
+                selectedCountry.code ===
+                country.code
+              }
+              onClick={() =>
+                handleCountryChange(country)
+              }
               className={`flex w-full items-center justify-between rounded-xl px-4 py-3 text-left text-sm transition ${
                 dark
                   ? "hover:bg-white/10"
                   : "hover:bg-black/5"
               }`}
             >
-              <span>{country.name}</span>
+              {/* FLAG + COUNTRY */}
+
+              <span className="flex items-center gap-3">
+                <span
+                  className={`fi fi-${country.code.toLowerCase()} text-base`}
+                />
+
+                <span>
+                  {country.name}
+                </span>
+              </span>
+
+              {/* DIAL CODE */}
 
               <span className="font-bold opacity-60">
                 {country.dialCode}
@@ -116,7 +161,9 @@ export default function PhoneInput({
         type="tel"
         value={value}
         onChange={(event) =>
-          handlePhoneChange(event.target.value)
+          handlePhoneChange(
+            event.target.value
+          )
         }
         inputMode="tel"
         autoComplete="tel-national"

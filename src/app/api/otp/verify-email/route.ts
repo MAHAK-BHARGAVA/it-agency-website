@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-
 import { prisma } from "@/lib/prisma";
 import {
   normalizeEmail,
-  normalizePhone,
   verifyOtp,
 } from "@/lib/otp";
 
@@ -16,29 +14,28 @@ export async function POST(req: Request) {
     const {
       verificationId,
       email,
-      phone,
       emailOtp,
-      phoneOtp,
     } = body;
 
-    if (!verificationId || !email || !phone || !emailOtp || !phoneOtp) {
+    if (!verificationId || !email || !emailOtp) {
       return NextResponse.json(
         {
           success: false,
-          message: "Verification ID, email, phone and both OTPs are required.",
+          message: "Verification ID, email and email OTP are required.",
         },
         { status: 400 }
       );
     }
 
     const normalizedEmail = normalizeEmail(email);
-    const normalizedPhone = normalizePhone(phone);
 
-    const verification = await prisma.leadVerification.findUnique({
-      where: {
-        id: verificationId,
-      },
-    });
+    // Find verification session
+    const verification =
+      await prisma.leadVerification.findUnique({
+        where: {
+          id: verificationId,
+        },
+      });
 
     if (!verification) {
       return NextResponse.json(
@@ -50,15 +47,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Make sure the OTP session belongs to this email/phone
-    if (
-      verification.email !== normalizedEmail ||
-      verification.phone !== normalizedPhone
-    ) {
+    // Make sure email matches
+    if (verification.email !== normalizedEmail) {
       return NextResponse.json(
         {
           success: false,
-          message: "Verification details do not match.",
+          message: "Verification email does not match.",
         },
         { status: 400 }
       );
@@ -81,7 +75,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Check attempts
+    // Check maximum attempts
     if (verification.attempts >= MAX_ATTEMPTS) {
       return NextResponse.json(
         {
@@ -93,18 +87,13 @@ export async function POST(req: Request) {
       );
     }
 
-    const isEmailOtpValid = verifyOtp(
+    // Verify email OTP
+    const isValid = verifyOtp(
       String(emailOtp).trim(),
       verification.emailOtpHash
     );
 
-    const isPhoneOtpValid = verifyOtp(
-      String(phoneOtp).trim(),
-      verification.phoneOtpHash
-    );
-
-    // Wrong OTP
-    if (!isEmailOtpValid || !isPhoneOtpValid) {
+    if (!isValid) {
       await prisma.leadVerification.update({
         where: {
           id: verification.id,
@@ -119,13 +108,13 @@ export async function POST(req: Request) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid OTP. Please check both OTPs and try again.",
+          message: "Invalid email OTP. Please check the code and try again.",
         },
         { status: 400 }
       );
     }
 
-    // Both OTPs are valid
+    // Email successfully verified
     const updatedVerification =
       await prisma.leadVerification.update({
         where: {
@@ -133,22 +122,22 @@ export async function POST(req: Request) {
         },
         data: {
           emailVerified: true,
-          phoneVerified: true,
+          attempts: 0,
         },
       });
 
     return NextResponse.json({
       success: true,
-      message: "Email and phone verified successfully.",
+      message: "Email verified successfully.",
       verificationId: updatedVerification.id,
     });
   } catch (error) {
-    console.error("OTP verification error:", error);
+    console.error("Email OTP verification error:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message: "Something went wrong while verifying the OTP.",
+        message: "Something went wrong while verifying your email.",
       },
       { status: 500 }
     );
