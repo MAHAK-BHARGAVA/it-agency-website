@@ -57,11 +57,9 @@ export async function POST(req: Request) {
       );
     }
 
+    // Generate ONLY email OTP
     const emailOtp = generateOtp();
-    const phoneOtp = generateOtp();
-
     const emailOtpHash = hashOtp(emailOtp);
-    const phoneOtpHash = hashOtp(phoneOtp);
 
     const expiresAt = getOtpExpiry();
 
@@ -80,8 +78,9 @@ export async function POST(req: Request) {
           preferredStartTime: preferredStartTime || null,
 
           emailOtpHash,
-          phoneOtpHash,
+          phoneOtpHash: null,
 
+          // Reset verification state
           emailVerified: false,
           phoneVerified: false,
 
@@ -103,7 +102,6 @@ export async function POST(req: Request) {
           preferredStartTime: preferredStartTime || null,
 
           emailOtpHash,
-          phoneOtpHash,
 
           expiresAt,
           lastSentAt: new Date(),
@@ -111,7 +109,7 @@ export async function POST(req: Request) {
       });
     }
 
-    // Send email OTP
+    // Send EMAIL OTP
     const { error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev",
       to: normalizedEmail,
@@ -140,21 +138,18 @@ export async function POST(req: Request) {
       );
     }
 
-    // DEV ONLY — phone OTP
-    console.log(`[DEV ONLY] Phone OTP for ${normalizedPhone}: ${phoneOtp}`);
-
     return NextResponse.json({
       success: true,
       verificationId: verification.id,
-      message: "OTP sent successfully.",
+      message: "Email OTP sent successfully.",
     });
   } catch (error) {
-    console.error("OTP send error:", error);
+    console.error("Email OTP send error:", error);
 
     return NextResponse.json(
       {
         success: false,
-        message: "Unable to send OTP.",
+        message: "Unable to send verification email.",
       },
       { status: 500 },
     );

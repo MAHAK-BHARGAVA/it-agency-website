@@ -25,29 +25,44 @@ const startTimeOptions = [
   { label: "Just Exploring", value: "Just Exploring" },
 ];
 
-type Step = "form" | "otp";
+type Step = "form" | "emailOtp" | "phoneOtp";
 
-export default function QuickEnquiryForm({ services }: Props) {
+type Status =
+  | "idle"
+  | "sendingOtp"
+  | "sendingPhoneOtp"
+  | "verifyingEmail"
+  | "verifyingPhone"
+  | "submitting"
+  | "error";
+
+export default function QuickEnquiryForm({
+  services,
+}: Props) {
   const router = useRouter();
 
   const [step, setStep] = useState<Step>("form");
 
-  const [status, setStatus] = useState<
-    "idle" | "sendingOtp" | "verifying" | "submitting" | "error"
-  >("idle");
+  const [status, setStatus] =
+    useState<Status>("idle");
 
   const [error, setError] = useState("");
 
-  const [verificationId, setVerificationId] = useState("");
+  const [verificationId, setVerificationId] =
+    useState("");
 
   const [emailOtp, setEmailOtp] = useState("");
   const [phoneOtp, setPhoneOtp] = useState("");
 
-  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendCooldown, setResendCooldown] =
+    useState(0);
 
   // PHONE
-  const [countryCode, setCountryCode] = useState("+91");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [countryCode, setCountryCode] =
+    useState("+91");
+
+  const [phoneNumber, setPhoneNumber] =
+    useState("");
 
   const [formValues, setFormValues] = useState({
     name: "",
@@ -91,7 +106,9 @@ export default function QuickEnquiryForm({ services }: Props) {
      VALIDATE FORM
   ========================================================= */
 
-  function validateForm(values = formValues) {
+  function validateForm(
+    values = formValues
+  ) {
     const {
       name,
       email,
@@ -99,18 +116,26 @@ export default function QuickEnquiryForm({ services }: Props) {
       preferredStartTime,
     } = values;
 
-    const cleanedPhone = phoneNumber.replace(/\D/g, "");
+    const cleanedPhone =
+      values.phone.replace(/\D/g, "");
 
-    if (name.length < 2 || name.length > 100) {
+    if (
+      name.length < 2 ||
+      name.length > 100
+    ) {
       setError("Please enter your full name.");
       return false;
     }
 
     if (
       !email ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        email
+      )
     ) {
-      setError("Please enter a valid email address.");
+      setError(
+        "Please enter a valid email address."
+      );
       return false;
     }
 
@@ -118,7 +143,9 @@ export default function QuickEnquiryForm({ services }: Props) {
       cleanedPhone.length < 6 ||
       cleanedPhone.length > 15
     ) {
-      setError("Please enter a valid contact number.");
+      setError(
+        "Please enter a valid contact number."
+      );
       return false;
     }
 
@@ -133,7 +160,9 @@ export default function QuickEnquiryForm({ services }: Props) {
     }
 
     if (!preferredStartTime) {
-      setError("Please select your preferred start time.");
+      setError(
+        "Please select your preferred start time."
+      );
       return false;
     }
 
@@ -141,10 +170,12 @@ export default function QuickEnquiryForm({ services }: Props) {
   }
 
   /* =========================================================
-     SEND OTP
+     SEND EMAIL OTP
   ========================================================= */
 
-  async function sendOtp(values = formValues) {
+  async function sendOtp(
+    values = formValues
+  ) {
     setError("");
 
     if (!validateForm(values)) {
@@ -155,37 +186,49 @@ export default function QuickEnquiryForm({ services }: Props) {
     setStatus("sendingOtp");
 
     try {
-      const response = await fetch("/api/otp/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: values.name,
-          email: values.email.trim().toLowerCase(),
+      const response = await fetch(
+        "/api/otp/send",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: values.name,
+            email: values.email
+              .trim()
+              .toLowerCase(),
 
-          // FULL INTERNATIONAL NUMBER
-          phone: values.phone,
+            phone: values.phone,
 
-          serviceId: Number(values.serviceId),
-          preferredStartTime: values.preferredStartTime,
-        }),
-      });
+            serviceId: Number(
+              values.serviceId
+            ),
+
+            preferredStartTime:
+              values.preferredStartTime,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Unable to send verification OTP."
+          data.message ||
+            data.error ||
+            "Unable to send verification OTP."
         );
       }
 
-      setVerificationId(data.verificationId);
+      setVerificationId(
+        data.verificationId
+      );
 
       setEmailOtp("");
       setPhoneOtp("");
 
-      setStep("otp");
+      setStep("emailOtp");
       setStatus("idle");
 
       startResendCooldown();
@@ -201,20 +244,16 @@ export default function QuickEnquiryForm({ services }: Props) {
   }
 
   /* =========================================================
-     VERIFY OTP
+     VERIFY EMAIL OTP
   ========================================================= */
 
-  async function verifyOtp() {
+  async function verifyEmailOtp() {
     setError("");
 
     if (!/^\d{6}$/.test(emailOtp)) {
-      setError("Please enter the 6-digit email OTP.");
-      setStatus("error");
-      return;
-    }
-
-    if (!/^\d{6}$/.test(phoneOtp)) {
-      setError("Please enter the 6-digit phone OTP.");
+      setError(
+        "Please enter the 6-digit email OTP."
+      );
       setStatus("error");
       return;
     }
@@ -227,34 +266,158 @@ export default function QuickEnquiryForm({ services }: Props) {
       return;
     }
 
-    setStatus("verifying");
+    setStatus("verifyingEmail");
 
     try {
-      const response = await fetch("/api/otp/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          verificationId,
-          email: formValues.email.trim().toLowerCase(),
-
-          // FULL INTERNATIONAL NUMBER
-          phone: formValues.phone,
-
-          emailOtp,
-          phoneOtp,
-        }),
-      });
+      const response = await fetch(
+        "/api/otp/verify-email",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            verificationId,
+            email: formValues.email
+              .trim()
+              .toLowerCase(),
+            emailOtp,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Invalid OTP. Please try again."
+          data.message ||
+            data.error ||
+            "Invalid email OTP. Please try again."
         );
       }
 
+      // Email verified successfully.
+      // Now automatically send phone OTP.
+      await sendPhoneOtp();
+    } catch (error) {
+      setStatus("error");
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Email verification failed."
+      );
+    }
+  }
+
+  /* =========================================================
+     SEND PHONE OTP
+  ========================================================= */
+
+  async function sendPhoneOtp() {
+    setError("");
+    setStatus("sendingPhoneOtp");
+
+    try {
+      const response = await fetch(
+        "/api/otp/send-phone",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            verificationId,
+            email: formValues.email
+              .trim()
+              .toLowerCase(),
+            phone: formValues.phone,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            data.error ||
+            "Unable to send phone OTP."
+        );
+      }
+
+      setPhoneOtp("");
+
+      setStep("phoneOtp");
+      setStatus("idle");
+
+      startResendCooldown();
+    } catch (error) {
+      setStatus("error");
+
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Unable to send phone OTP."
+      );
+    }
+  }
+
+  /* =========================================================
+     VERIFY PHONE OTP
+  ========================================================= */
+
+  async function verifyPhoneOtp() {
+    setError("");
+
+    if (!/^\d{6}$/.test(phoneOtp)) {
+      setError(
+        "Please enter the 6-digit phone OTP."
+      );
+      setStatus("error");
+      return;
+    }
+
+    if (!verificationId) {
+      setError(
+        "Verification session not found. Please start again."
+      );
+      setStatus("error");
+      return;
+    }
+
+    setStatus("verifyingPhone");
+
+    try {
+      const response = await fetch(
+        "/api/otp/verify-phone",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            verificationId,
+            email: formValues.email
+              .trim()
+              .toLowerCase(),
+            phone: formValues.phone,
+            phoneOtp,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message ||
+            data.error ||
+            "Invalid phone OTP. Please try again."
+        );
+      }
+
+      // Both email + phone are now verified.
       await submitLead();
     } catch (error) {
       setStatus("error");
@@ -262,7 +425,7 @@ export default function QuickEnquiryForm({ services }: Props) {
       setError(
         error instanceof Error
           ? error.message
-          : "OTP verification failed."
+          : "Phone verification failed."
       );
     }
   }
@@ -276,30 +439,26 @@ export default function QuickEnquiryForm({ services }: Props) {
     setStatus("submitting");
 
     try {
-      const response = await fetch("/api/leads", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formValues.name,
-          email: formValues.email.trim().toLowerCase(),
-
-          // FULL INTERNATIONAL NUMBER
-          phone: formValues.phone,
-
-          serviceId: Number(formValues.serviceId),
-          preferredStartTime: formValues.preferredStartTime,
-          website: formValues.website,
-          verificationId,
-        }),
-      });
+      const response = await fetch(
+        "/api/contact",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            verificationId,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.message || "Unable to submit your enquiry."
+          data.message ||
+            data.error ||
+            "Unable to submit your enquiry."
         );
       }
 
@@ -318,58 +477,23 @@ export default function QuickEnquiryForm({ services }: Props) {
   }
 
   /* =========================================================
-     RESEND OTP
+     RESEND EMAIL OTP
   ========================================================= */
 
-  async function resendOtp() {
+  async function resendEmailOtp() {
     if (resendCooldown > 0) return;
 
-    setError("");
-    setStatus("sendingOtp");
+    await sendOtp(formValues);
+  }
 
-    try {
-      const response = await fetch("/api/otp/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formValues.name,
-          email: formValues.email.trim().toLowerCase(),
+  /* =========================================================
+     RESEND PHONE OTP
+  ========================================================= */
 
-          // FULL INTERNATIONAL NUMBER
-          phone: formValues.phone,
+  async function resendPhoneOtp() {
+    if (resendCooldown > 0) return;
 
-          serviceId: Number(formValues.serviceId),
-          preferredStartTime: formValues.preferredStartTime,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message || "Unable to resend OTP."
-        );
-      }
-
-      setVerificationId(data.verificationId);
-
-      setEmailOtp("");
-      setPhoneOtp("");
-
-      setStatus("idle");
-
-      startResendCooldown();
-    } catch (error) {
-      setStatus("error");
-
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to resend OTP."
-      );
-    }
+    await sendPhoneOtp();
   }
 
   /* =========================================================
@@ -381,15 +505,29 @@ export default function QuickEnquiryForm({ services }: Props) {
   ) {
     event.preventDefault();
 
+    if (
+      status === "sendingOtp" ||
+      status === "sendingPhoneOtp" ||
+      status === "verifyingEmail" ||
+      status === "verifyingPhone" ||
+      status === "submitting"
+    ) {
+      return;
+    }
+
     const form = event.currentTarget;
     const formData = new FormData(form);
 
     const fullPhone = getFullPhoneNumber();
 
     const values = {
-      name: String(formData.get("name") ?? "").trim(),
+      name: String(
+        formData.get("name") ?? ""
+      ).trim(),
 
-      email: String(formData.get("email") ?? "").trim(),
+      email: String(
+        formData.get("email") ?? ""
+      ).trim(),
 
       phone: fullPhone,
 
@@ -398,7 +536,9 @@ export default function QuickEnquiryForm({ services }: Props) {
       ),
 
       preferredStartTime: String(
-        formData.get("preferredStartTime") ?? ""
+        formData.get(
+          "preferredStartTime"
+        ) ?? ""
       ),
 
       website: String(
@@ -406,105 +546,14 @@ export default function QuickEnquiryForm({ services }: Props) {
       ).trim(),
     };
 
-    // Temporarily store the complete form values
     setFormValues(values);
 
-    /* VALIDATION */
-
-    if (
-      values.name.length < 2 ||
-      values.name.length > 100
-    ) {
-      setError("Please enter your full name.");
+    if (!validateForm(values)) {
       setStatus("error");
       return;
     }
 
-    if (
-      !values.email ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        values.email
-      )
-    ) {
-      setError("Please enter a valid email address.");
-      setStatus("error");
-      return;
-    }
-
-    const phoneDigits = phoneNumber.replace(/\D/g, "");
-
-    if (
-      phoneDigits.length < 6 ||
-      phoneDigits.length > 15
-    ) {
-      setError("Please enter a valid contact number.");
-      setStatus("error");
-      return;
-    }
-
-    if (!values.serviceId) {
-      setError("Please select a service.");
-      setStatus("error");
-      return;
-    }
-
-    if (!values.preferredStartTime) {
-      setError(
-        "Please select your preferred start time."
-      );
-      setStatus("error");
-      return;
-    }
-
-    setError("");
-    setStatus("sendingOtp");
-
-    try {
-      const response = await fetch("/api/otp/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: values.name,
-          email: values.email.toLowerCase(),
-
-          // +91 + phone number
-          phone: values.phone,
-
-          serviceId: Number(values.serviceId),
-          preferredStartTime:
-            values.preferredStartTime,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            "Unable to send verification OTP."
-        );
-      }
-
-      setVerificationId(data.verificationId);
-
-      setEmailOtp("");
-      setPhoneOtp("");
-
-      setStep("otp");
-      setStatus("idle");
-
-      startResendCooldown();
-    } catch (error) {
-      setStatus("error");
-
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Something went wrong while sending OTP."
-      );
-    }
+    await sendOtp(values);
   }
 
   return (
@@ -521,7 +570,11 @@ export default function QuickEnquiryForm({ services }: Props) {
         />
 
         <div className="relative z-10">
-          {step === "form" ? (
+          {/* =====================================================
+              FORM
+          ===================================================== */}
+
+          {step === "form" && (
             <>
               <p className="text-xs font-black uppercase tracking-[0.28em] text-lime-600">
                 Free Consultation
@@ -532,8 +585,8 @@ export default function QuickEnquiryForm({ services }: Props) {
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-black/55">
-                Share a few details and our team will
-                contact you shortly.
+                Share a few details and our team
+                will contact you shortly.
               </p>
 
               <form
@@ -615,8 +668,12 @@ export default function QuickEnquiryForm({ services }: Props) {
                   <PhoneInput
                     value={phoneNumber}
                     countryCode={countryCode}
-                    onCountryChange={setCountryCode}
-                    onPhoneChange={setPhoneNumber}
+                    onCountryChange={
+                      setCountryCode
+                    }
+                    onPhoneChange={
+                      setPhoneNumber
+                    }
                   />
                 </div>
 
@@ -641,14 +698,16 @@ export default function QuickEnquiryForm({ services }: Props) {
                       Select a service
                     </option>
 
-                    {services.map((service) => (
-                      <option
-                        key={service.id}
-                        value={service.id}
-                      >
-                        {service.name}
-                      </option>
-                    ))}
+                    {services.map(
+                      (service) => (
+                        <option
+                          key={service.id}
+                          value={service.id}
+                        >
+                          {service.name}
+                        </option>
+                      )
+                    )}
                   </select>
                 </div>
 
@@ -702,7 +761,15 @@ export default function QuickEnquiryForm({ services }: Props) {
                 <button
                   type="submit"
                   disabled={
-                    status === "sendingOtp"
+                    status ===
+                      "sendingOtp" ||
+                    status ===
+                      "sendingPhoneOtp" ||
+                    status ===
+                      "verifyingEmail" ||
+                    status ===
+                      "verifyingPhone" ||
+                    status === "submitting"
                   }
                   className="group flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-lime-400 px-6 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-all duration-300 hover:-translate-y-1 hover:bg-lime-300 hover:shadow-[0_16px_40px_rgba(163,230,53,0.25)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                 >
@@ -710,7 +777,8 @@ export default function QuickEnquiryForm({ services }: Props) {
                     ? "Sending OTP..."
                     : "Verify & Continue"}
 
-                  {status !== "sendingOtp" && (
+                  {status !==
+                    "sendingOtp" && (
                     <ArrowUpRight className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
                   )}
                 </button>
@@ -718,30 +786,39 @@ export default function QuickEnquiryForm({ services }: Props) {
                 <p className="flex items-start justify-center gap-2 text-center text-xs leading-5 text-black/45">
                   <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
 
-                  Your information is secure and will only
-                  be used to discuss your requirements.
+                  Your information is secure and
+                  will only be used to discuss your
+                  requirements.
                 </p>
               </form>
             </>
-          ) : (
-            <>
-              {/* OTP SCREEN */}
+          )}
 
+          {/* =====================================================
+              EMAIL OTP
+          ===================================================== */}
+
+          {step === "emailOtp" && (
+            <>
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-lime-400/15">
                 <ShieldCheck className="h-7 w-7 text-lime-600" />
               </div>
 
               <p className="mt-6 text-xs font-black uppercase tracking-[0.28em] text-lime-600">
-                Verify Your Details
+                Email Verification
               </p>
 
               <h2 className="mt-3 text-3xl font-black leading-tight text-black sm:text-4xl">
-                Almost There!
+                Verify Your Email
               </h2>
 
               <p className="mt-3 text-sm leading-6 text-black/55">
-                We&apos;ve sent verification codes to your
-                email and phone number.
+                We&apos;ve sent a 6-digit
+                verification code to{" "}
+                <span className="font-bold text-black">
+                  {formValues.email}
+                </span>
+                .
               </p>
 
               <div className="mt-7 space-y-5">
@@ -774,6 +851,127 @@ export default function QuickEnquiryForm({ services }: Props) {
                   />
                 </div>
 
+                {/* ERROR */}
+
+                {error && (
+                  <p
+                    role="alert"
+                    className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+                  >
+                    {error}
+                  </p>
+                )}
+
+                {/* VERIFY EMAIL */}
+
+                <button
+                  type="button"
+                  onClick={
+                    verifyEmailOtp
+                  }
+                  disabled={
+                    status ===
+                      "verifyingEmail" ||
+                    status ===
+                      "sendingPhoneOtp"
+                  }
+                  className="group flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-lime-400 px-6 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-all duration-300 hover:-translate-y-1 hover:bg-lime-300 hover:shadow-[0_16px_40px_rgba(163,230,53,0.25)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
+                >
+                  {status ===
+                  "verifyingEmail"
+                    ? "Verifying Email..."
+                    : status ===
+                        "sendingPhoneOtp"
+                      ? "Sending Phone OTP..."
+                      : "Verify Email"}
+
+                  {status !==
+                    "verifyingEmail" &&
+                    status !==
+                      "sendingPhoneOtp" && (
+                      <ArrowUpRight className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
+                    )}
+                </button>
+
+                {/* RESEND */}
+
+                <div className="text-center">
+                  <button
+                    type="button"
+                    onClick={
+                      resendEmailOtp
+                    }
+                    disabled={
+                      resendCooldown > 0 ||
+                      status ===
+                        "sendingOtp" ||
+                      status ===
+                        "verifyingEmail" ||
+                      status ===
+                        "sendingPhoneOtp"
+                    }
+                    className="text-sm font-bold text-black underline decoration-black/20 underline-offset-4 transition hover:text-lime-600 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {status ===
+                    "sendingOtp"
+                      ? "Sending..."
+                      : resendCooldown >
+                          0
+                        ? `Resend email OTP in ${resendCooldown}s`
+                        : "Resend email OTP"}
+                  </button>
+                </div>
+
+                {/* BACK */}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setStep("form");
+                    setError("");
+                    setEmailOtp("");
+                    setPhoneOtp("");
+                    setStatus("idle");
+                  }}
+                  className="w-full text-center text-xs font-bold text-black/45 transition hover:text-black"
+                >
+                  ← Edit your details
+                </button>
+
+                <p className="flex items-start justify-center gap-2 text-center text-xs leading-5 text-black/45">
+                  <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
+
+                  Your email is verified securely
+                  before we continue.
+                </p>
+              </div>
+            </>
+          )}
+
+          {/* =====================================================
+              PHONE OTP
+          ===================================================== */}
+
+          {step === "phoneOtp" && (
+            <>
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-lime-400/15">
+                <ShieldCheck className="h-7 w-7 text-lime-600" />
+              </div>
+
+              <p className="mt-6 text-xs font-black uppercase tracking-[0.28em] text-lime-600">
+                Phone Verification
+              </p>
+
+              <h2 className="mt-3 text-3xl font-black leading-tight text-black sm:text-4xl">
+                One Last Step
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-black/55">
+                Enter the 6-digit verification
+                code sent to your phone number.
+              </p>
+
+              <div className="mt-7 space-y-5">
                 {/* PHONE OTP */}
 
                 <div>
@@ -802,6 +1000,14 @@ export default function QuickEnquiryForm({ services }: Props) {
                   />
                 </div>
 
+                {/* LOCAL DEV NOTE */}
+
+                <p className="rounded-xl border border-lime-200 bg-lime-50 px-4 py-3 text-center text-xs leading-5 text-black/55">
+                  During local development, the
+                  phone OTP is available in your
+                  server terminal.
+                </p>
+
                 {/* ERROR */}
 
                 {error && (
@@ -813,48 +1019,62 @@ export default function QuickEnquiryForm({ services }: Props) {
                   </p>
                 )}
 
-                {/* VERIFY */}
+                {/* VERIFY PHONE */}
 
                 <button
                   type="button"
-                  onClick={verifyOtp}
+                  onClick={
+                    verifyPhoneOtp
+                  }
                   disabled={
-                    status === "verifying" ||
+                    status ===
+                      "verifyingPhone" ||
                     status === "submitting"
                   }
                   className="group flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-lime-400 px-6 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-all duration-300 hover:-translate-y-1 hover:bg-lime-300 hover:shadow-[0_16px_40px_rgba(163,230,53,0.25)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                 >
-                  {status === "verifying"
-                    ? "Verifying..."
-                    : status === "submitting"
+                  {status ===
+                  "verifyingPhone"
+                    ? "Verifying Phone..."
+                    : status ===
+                        "submitting"
                       ? "Submitting..."
                       : "Verify & Submit"}
 
-                  {status !== "verifying" &&
-                    status !== "submitting" && (
+                  {status !==
+                    "verifyingPhone" &&
+                    status !==
+                      "submitting" && (
                       <ArrowUpRight className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
                     )}
                 </button>
 
-                {/* RESEND */}
+                {/* RESEND PHONE OTP */}
 
                 <div className="text-center">
                   <button
                     type="button"
-                    onClick={resendOtp}
+                    onClick={
+                      resendPhoneOtp
+                    }
                     disabled={
                       resendCooldown > 0 ||
-                      status === "sendingOtp" ||
-                      status === "verifying" ||
-                      status === "submitting"
+                      status ===
+                        "sendingPhoneOtp" ||
+                      status ===
+                        "verifyingPhone" ||
+                      status ===
+                        "submitting"
                     }
                     className="text-sm font-bold text-black underline decoration-black/20 underline-offset-4 transition hover:text-lime-600 disabled:cursor-not-allowed disabled:opacity-40"
                   >
-                    {status === "sendingOtp"
+                    {status ===
+                    "sendingPhoneOtp"
                       ? "Sending..."
-                      : resendCooldown > 0
-                        ? `Resend OTP in ${resendCooldown}s`
-                        : "Resend OTP"}
+                      : resendCooldown >
+                          0
+                        ? `Resend phone OTP in ${resendCooldown}s`
+                        : "Resend phone OTP"}
                   </button>
                 </div>
 
@@ -867,6 +1087,7 @@ export default function QuickEnquiryForm({ services }: Props) {
                     setError("");
                     setEmailOtp("");
                     setPhoneOtp("");
+                    setStatus("idle");
                   }}
                   className="w-full text-center text-xs font-bold text-black/45 transition hover:text-black"
                 >
@@ -876,8 +1097,9 @@ export default function QuickEnquiryForm({ services }: Props) {
                 <p className="flex items-start justify-center gap-2 text-center text-xs leading-5 text-black/45">
                   <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
 
-                  Your contact details are verified securely
-                  before your enquiry is submitted.
+                  Your contact details are verified
+                  securely before your enquiry is
+                  submitted.
                 </p>
               </div>
             </>

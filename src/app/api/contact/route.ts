@@ -6,6 +6,7 @@ import {
 import { Resend } from "resend";
 
 import NewLeadEmail from "@/emails/NewLeadEmail";
+import ThankYouEmail from "@/emails/ThankYouEmail";
 
 const resend = new Resend(
   process.env.RESEND_API_KEY
@@ -134,7 +135,7 @@ export async function POST(
 
     const lead = await prisma.$transaction(
       async (tx) => {
-        // Re-check inside transaction
+        // Re-check verification inside transaction
         const currentVerification =
           await tx.leadVerification.findUnique({
             where: {
@@ -180,7 +181,7 @@ export async function POST(
             },
           });
 
-        // OTP session is now consumed
+        // Verification session is now consumed
         await tx.leadVerification.delete({
           where: {
             id: verificationId,
@@ -192,7 +193,7 @@ export async function POST(
     );
 
     /* -----------------------------------------
-       7. SEND EMAIL TO SOCLTHRY
+       7. EMAIL CONFIG
     ----------------------------------------- */
 
     const companyName =
@@ -205,19 +206,15 @@ export async function POST(
     const resendFrom =
       process.env.RESEND_FROM_EMAIL;
 
-    if (!process.env.RESEND_API_KEY) {
-      console.error(
-        "RESEND_API_KEY is missing."
-      );
-    } else if (!companyEmail) {
-      console.error(
-        "COMPANY_EMAIL is missing."
-      );
-    } else if (!resendFrom) {
-      console.error(
-        "RESEND_FROM_EMAIL is missing."
-      );
-    } else {
+    /* -----------------------------------------
+       8. SEND COMPANY NOTIFICATION
+    ----------------------------------------- */
+
+    if (
+      process.env.RESEND_API_KEY &&
+      companyEmail &&
+      resendFrom
+    ) {
       try {
         const result =
           await resend.emails.send({
@@ -262,20 +259,69 @@ export async function POST(
 
         if (result.error) {
           console.error(
-            "RESEND ERROR:",
+            "Company notification email failed:",
             result.error
           );
         }
       } catch (emailError) {
         console.error(
-          "Notification email failed:",
+          "Company notification email failed:",
           emailError
         );
       }
+    } else {
+      console.error(
+        "Missing Resend configuration for company notification."
+      );
     }
 
     /* -----------------------------------------
-       8. SUCCESS
+       9. SEND THANK-YOU EMAIL TO CUSTOMER
+    ----------------------------------------- */
+
+    if (
+      process.env.RESEND_API_KEY &&
+      lead.email &&
+      resendFrom
+    ) {
+      try {
+        const result =
+          await resend.emails.send({
+            from: resendFrom,
+
+            to: [lead.email],
+
+            subject:
+              "We received your enquiry — Soclthry",
+
+            react: ThankYouEmail({
+              clientName:
+                lead.name,
+
+              serviceName,
+            }),
+          });
+
+        if (result.error) {
+          console.error(
+            "Thank-you email failed:",
+            result.error
+          );
+        }
+      } catch (emailError) {
+        console.error(
+          "Thank-you email failed:",
+          emailError
+        );
+      }
+    } else {
+      console.error(
+        "Missing Resend configuration for customer thank-you email."
+      );
+    }
+
+    /* -----------------------------------------
+       10. SUCCESS
     ----------------------------------------- */
 
     return NextResponse.json(
@@ -291,6 +337,10 @@ export async function POST(
       { status: 201 }
     );
   } catch (error) {
+    /* -----------------------------------------
+       VERIFICATION ALREADY USED
+    ----------------------------------------- */
+
     if (
       error instanceof Error &&
       error.message ===
@@ -306,6 +356,10 @@ export async function POST(
         { status: 403 }
       );
     }
+
+    /* -----------------------------------------
+       GENERAL ERROR
+    ----------------------------------------- */
 
     console.error(
       "CONTACT API ERROR:",

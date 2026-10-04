@@ -246,7 +246,7 @@ model LeadVerification {
   preferredStartTime  String?
 
   emailOtpHash        String
-  phoneOtpHash        String
+  phoneOtpHash        String?
 
   emailVerified       Boolean  @default(false)
   phoneVerified       Boolean  @default(false)
