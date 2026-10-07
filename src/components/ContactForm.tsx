@@ -16,14 +16,12 @@ const startTimeOptions = [
   { label: "Just Exploring", value: "Just Exploring" },
 ];
 
-type Step = "form" | "emailOtp" | "phoneOtp";
+type Step = "form" | "emailOtp";
 
 type Status =
   | "idle"
   | "sendingOtp"
-  | "sendingPhoneOtp"
   | "verifyingEmail"
-  | "verifyingPhone"
   | "submitting"
   | "sent"
   | "error";
@@ -38,29 +36,40 @@ type FormValues = {
   message: string;
 };
 
-export function ContactForm({ services }: { services: Service[] }) {
+export function ContactForm({
+  services,
+}: {
+  services: Service[];
+}) {
   const [step, setStep] = useState<Step>("form");
 
-  const [status, setStatus] = useState<Status>("idle");
+  const [status, setStatus] =
+    useState<Status>("idle");
 
-  const [formValues, setFormValues] = useState<FormValues | null>(null);
+  const [formValues, setFormValues] =
+    useState<FormValues | null>(null);
 
-  const [verificationId, setVerificationId] = useState("");
+  const [verificationId, setVerificationId] =
+    useState("");
 
-  const [emailOtp, setEmailOtp] = useState("");
-  const [phoneOtp, setPhoneOtp] = useState("");
+  const [emailOtp, setEmailOtp] =
+    useState("");
 
-  const [resendSeconds, setResendSeconds] = useState(0);
+  const [resendSeconds, setResendSeconds] =
+    useState(0);
 
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] =
+    useState("");
 
   /* =====================================================
      PHONE COUNTRY CODE
   ===================================================== */
 
-  const [countryCode, setCountryCode] = useState("+91");
+  const [countryCode, setCountryCode] =
+    useState("+91");
 
-  const [phone, setPhone] = useState("");
+  const [phone, setPhone] =
+    useState("");
 
   /* ================= RESEND TIMER ================= */
 
@@ -89,19 +98,23 @@ export function ContactForm({ services }: { services: Service[] }) {
     phoneNumber: string = phone,
     dialCode: string = countryCode,
   ) {
-    const cleanedPhone = phoneNumber.replace(/\D/g, "");
+    const cleanedPhone =
+      phoneNumber.replace(/\D/g, "");
 
     return `${dialCode}${cleanedPhone}`;
   }
 
-  /* ================= SEND OTP ================= */
+  /* ================= SEND EMAIL OTP ================= */
 
   async function sendOtp(values: FormValues) {
     setStatus("sendingOtp");
     setErrorMessage("");
 
     try {
-      const fullPhone = getFullPhoneNumber(values.phone, countryCode);
+      const fullPhone = getFullPhoneNumber(
+        values.phone,
+        countryCode,
+      );
 
       const res = await fetch("/api/otp/send", {
         method: "POST",
@@ -113,8 +126,11 @@ export function ContactForm({ services }: { services: Service[] }) {
           email: values.email,
           phone: fullPhone,
           city: values.city,
-          serviceId: values.serviceId ? Number(values.serviceId) : null,
-          preferredStartTime: values.preferredStartTime,
+          serviceId: values.serviceId
+            ? Number(values.serviceId)
+            : null,
+          preferredStartTime:
+            values.preferredStartTime,
           message: values.message,
         }),
       });
@@ -123,23 +139,30 @@ export function ContactForm({ services }: { services: Service[] }) {
 
       if (!res.ok || !result.success) {
         throw new Error(
-          result.message || result.error || "Unable to send OTP.",
+          result.message ||
+            result.error ||
+            "Unable to send OTP.",
         );
       }
 
-      setVerificationId(result.verificationId);
+      setVerificationId(
+        result.verificationId,
+      );
 
       setFormValues(values);
 
       setEmailOtp("");
-      setPhoneOtp("");
 
       setResendSeconds(60);
 
       setStep("emailOtp");
+
       setStatus("idle");
     } catch (error) {
-      console.error("OTP send error:", error);
+      console.error(
+        "OTP send error:",
+        error,
+      );
 
       setErrorMessage(
         error instanceof Error
@@ -153,51 +176,72 @@ export function ContactForm({ services }: { services: Service[] }) {
 
   /* ================= FORM SUBMIT ================= */
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(
+    e: React.FormEvent<HTMLFormElement>,
+  ) {
     e.preventDefault();
 
-   if (
-  status === "sendingOtp" ||
-  status === "sendingPhoneOtp"
-) {
-  return;
-}
+    if (status === "sendingOtp") {
+      return;
+    }
 
     const form = e.currentTarget;
 
     const values: FormValues = {
-      name: (form.elements.namedItem("name") as HTMLInputElement).value.trim(),
+      name: (
+        form.elements.namedItem(
+          "name",
+        ) as HTMLInputElement
+      ).value.trim(),
 
       email: (
-        form.elements.namedItem("email") as HTMLInputElement
+        form.elements.namedItem(
+          "email",
+        ) as HTMLInputElement
       ).value.trim(),
 
       phone: phone.trim(),
 
-      city: (form.elements.namedItem("city") as HTMLInputElement).value.trim(),
+      city: (
+        form.elements.namedItem(
+          "city",
+        ) as HTMLInputElement
+      ).value.trim(),
 
-      serviceId: (form.elements.namedItem("serviceId") as HTMLSelectElement)
-        .value,
+      serviceId: (
+        form.elements.namedItem(
+          "serviceId",
+        ) as HTMLSelectElement
+      ).value,
 
       preferredStartTime: (
-        form.elements.namedItem("preferredStartTime") as HTMLSelectElement
+        form.elements.namedItem(
+          "preferredStartTime",
+        ) as HTMLSelectElement
       ).value,
 
       message: (
-        form.elements.namedItem("message") as HTMLTextAreaElement
+        form.elements.namedItem(
+          "message",
+        ) as HTMLTextAreaElement
       ).value.trim(),
     };
 
-    if (!phone || phone.replace(/\D/g, "").length < 6) {
-      setErrorMessage("Please enter a valid phone number.");
+    if (
+      !phone ||
+      phone.replace(/\D/g, "").length < 6
+    ) {
+      setErrorMessage(
+        "Please enter a valid phone number.",
+      );
+
       setStatus("error");
+
       return;
     }
 
     await sendOtp(values);
   }
-
-  /* ================= VERIFY OTP ================= */
 
   /* ================= VERIFY EMAIL OTP ================= */
 
@@ -208,13 +252,17 @@ export function ContactForm({ services }: { services: Service[] }) {
       );
 
       setStatus("error");
+
       return;
     }
 
     if (emailOtp.length !== 6) {
-      setErrorMessage("Please enter the 6-digit email OTP.");
+      setErrorMessage(
+        "Please enter the 6-digit email OTP.",
+      );
 
       setStatus("error");
+
       return;
     }
 
@@ -222,32 +270,41 @@ export function ContactForm({ services }: { services: Service[] }) {
     setErrorMessage("");
 
     try {
-      const res = await fetch("/api/otp/verify-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        "/api/otp/verify-email",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            verificationId,
+            email: formValues.email,
+            emailOtp,
+          }),
         },
-        body: JSON.stringify({
-          verificationId,
-          email: formValues.email,
-          emailOtp,
-        }),
-      });
+      );
 
       const result = await res.json();
 
       if (!res.ok || !result.success) {
-        throw new Error(result.message || result.error || "Invalid email OTP.");
+        throw new Error(
+          result.message ||
+            result.error ||
+            "Invalid email OTP.",
+        );
       }
 
-      /*
-       * Email verified successfully.
-       * Now generate the phone OTP.
-       */
+      /* Email verified successfully.
+         Now create the actual lead. */
 
-      await sendPhoneOtp();
+      await submitContact();
     } catch (error) {
-      console.error("Email OTP verification error:", error);
+      console.error(
+        "Email OTP verification error:",
+        error,
+      );
 
       setErrorMessage(
         error instanceof Error
@@ -259,183 +316,90 @@ export function ContactForm({ services }: { services: Service[] }) {
     }
   }
 
-  /* ================= SEND PHONE OTP ================= */
-
-  async function sendPhoneOtp() {
-    if (!verificationId || !formValues) {
-      setErrorMessage("Verification session expired. Please start again.");
-
-      setStatus("error");
-      return;
-    }
-
-    setStatus("sendingPhoneOtp");
-    setErrorMessage("");
-
-    try {
-      const fullPhone = getFullPhoneNumber(formValues.phone, countryCode);
-
-      const res = await fetch("/api/otp/send-phone", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          verificationId,
-          email: formValues.email,
-          phone: fullPhone,
-        }),
-      });
-
-      const result = await res.json();
-
-      if (!res.ok || !result.success) {
-        throw new Error(
-          result.message || result.error || "Unable to send phone OTP.",
-        );
-      }
-
-      setPhoneOtp("");
-
-      setResendSeconds(60);
-
-      setStep("phoneOtp");
-
-      setStatus("idle");
-    } catch (error) {
-      console.error("Phone OTP send error:", error);
-
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Unable to send phone OTP. Please try again.",
-      );
-
-      setStatus("error");
-    }
-  }
-
-  /* ================= VERIFY PHONE OTP ================= */
-
-  async function verifyPhoneOtp() {
-    if (!verificationId || !formValues) {
-      setErrorMessage(
-        "Verification session expired. Please request a new OTP.",
-      );
-
-      setStatus("error");
-      return;
-    }
-
-    if (phoneOtp.length !== 6) {
-      setErrorMessage("Please enter the 6-digit phone OTP.");
-
-      setStatus("error");
-      return;
-    }
-
-    setStatus("verifyingPhone");
-    setErrorMessage("");
-
-    try {
-      const fullPhone = getFullPhoneNumber(formValues.phone, countryCode);
-
-      const res = await fetch("/api/otp/verify-phone", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          verificationId,
-          email: formValues.email,
-          phone: fullPhone,
-          phoneOtp,
-        }),
-      });
-
-      const result = await res.json();
-
-      if (!res.ok || !result.success) {
-        throw new Error(result.message || result.error || "Invalid phone OTP.");
-      }
-
-      /*
-       * Both email and phone are now verified.
-       * Create the actual lead.
-       */
-
-      await submitContact();
-    } catch (error) {
-      console.error("Phone OTP verification error:", error);
-
-      setErrorMessage(
-        error instanceof Error
-          ? error.message
-          : "Phone verification failed. Please try again.",
-      );
-
-      setStatus("error");
-    }
-  }
-
   /* ================= FINAL CONTACT SUBMIT ================= */
 
   async function submitContact() {
     if (!verificationId || !formValues) {
-      throw new Error("Verification session is missing.");
+      throw new Error(
+        "Verification session is missing.",
+      );
     }
 
     setStatus("submitting");
     setErrorMessage("");
 
     try {
-      const fullPhone = getFullPhoneNumber(formValues.phone, countryCode);
+      const fullPhone =
+        getFullPhoneNumber(
+          formValues.phone,
+          countryCode,
+        );
 
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      const res = await fetch(
+        "/api/contact",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+          body: JSON.stringify({
+            verificationId,
+
+            name: formValues.name,
+
+            email: formValues.email,
+
+            phone: fullPhone,
+
+            city: formValues.city,
+
+            serviceId: formValues.serviceId
+              ? Number(formValues.serviceId)
+              : null,
+
+            preferredStartTime:
+              formValues.preferredStartTime,
+
+            message: formValues.message,
+          }),
         },
-        body: JSON.stringify({
-          verificationId,
-
-          name: formValues.name,
-          email: formValues.email,
-          phone: fullPhone,
-          city: formValues.city,
-
-          serviceId: formValues.serviceId ? Number(formValues.serviceId) : null,
-
-          preferredStartTime: formValues.preferredStartTime,
-
-          message: formValues.message,
-        }),
-      });
+      );
 
       const result = await res.json();
 
       if (!res.ok || !result.success) {
-        throw new Error(result.error || "Unable to submit enquiry.");
+        throw new Error(
+          result.error ||
+            "Unable to submit enquiry.",
+        );
       }
 
       setStatus("sent");
+
       setStep("form");
 
       setVerificationId("");
+
       setFormValues(null);
 
       setEmailOtp("");
-      setPhoneOtp("");
 
       setResendSeconds(0);
 
       setPhone("");
+
       setCountryCode("+91");
     } catch (error) {
-      console.error("Contact submission error:", error);
+      console.error(
+        "Contact submission error:",
+        error,
+      );
 
       setErrorMessage(
-        error instanceof Error ? error.message : "Unable to submit enquiry.",
+        error instanceof Error
+          ? error.message
+          : "Unable to submit enquiry.",
       );
 
       setStatus("error");
@@ -445,18 +409,14 @@ export function ContactForm({ services }: { services: Service[] }) {
   /* ================= RESEND OTP ================= */
 
   async function resendOtp() {
-    if (!formValues || resendSeconds > 0) {
+    if (
+      !formValues ||
+      resendSeconds > 0
+    ) {
       return;
     }
 
-    if (step === "emailOtp") {
-      await sendOtp(formValues);
-      return;
-    }
-
-    if (step === "phoneOtp") {
-      await sendPhoneOtp();
-    }
+    await sendOtp(formValues);
   }
 
   /* ================= SUCCESS ================= */
@@ -465,7 +425,10 @@ export function ContactForm({ services }: { services: Service[] }) {
     return (
       <div className="flex min-h-[520px] flex-col items-center justify-center text-center">
         <div className="flex h-20 w-20 items-center justify-center rounded-full bg-lime-400">
-          <Check size={34} strokeWidth={2.5} />
+          <Check
+            size={34}
+            strokeWidth={2.5}
+          />
         </div>
 
         <p className="mt-8 text-[10px] font-black uppercase tracking-[0.2em] text-black/30">
@@ -477,7 +440,9 @@ export function ContactForm({ services }: { services: Service[] }) {
         </h3>
 
         <p className="mt-5 max-w-md text-sm leading-7 text-black/45">
-          Thanks for reaching out. Your enquiry has been received by our team.
+          Thanks for reaching out. Your
+          enquiry has been received by our
+          team.
         </p>
 
         <button
@@ -494,11 +459,9 @@ export function ContactForm({ services }: { services: Service[] }) {
     );
   }
 
-  /* ================= OTP SCREEN ================= */
+  /* ================= EMAIL OTP SCREEN ================= */
 
-  if (step === "emailOtp" || step === "phoneOtp") {
-    const isEmailStep = step === "emailOtp";
-
+  if (step === "emailOtp") {
     return (
       <div className="min-h-[520px]">
         <div className="border-b border-black/10 py-7">
@@ -507,16 +470,13 @@ export function ContactForm({ services }: { services: Service[] }) {
           </p>
 
           <h3 className="mt-3 text-3xl font-black tracking-[-0.045em]">
-            {isEmailStep ? "Verify your email" : "Verify your phone"}
+            Verify your email
           </h3>
 
           <p className="mt-4 max-w-lg text-sm leading-7 text-black/45">
-            {isEmailStep
-              ? `We&apos;ve sent a 6-digit verification code to ${formValues?.email}.`
-              : `We&apos;ve generated a 6-digit verification code for ${getFullPhoneNumber(
-                  formValues?.phone ?? "",
-                  countryCode,
-                )}.`}
+            We&apos;ve sent a 6-digit
+            verification code to{" "}
+            {formValues?.email}.
           </p>
         </div>
 
@@ -524,23 +484,22 @@ export function ContactForm({ services }: { services: Service[] }) {
 
         <div className="border-b border-black/10 py-7">
           <label
-            htmlFor={isEmailStep ? "emailOtp" : "phoneOtp"}
+            htmlFor="emailOtp"
             className="block text-xs font-black uppercase tracking-[0.14em]"
           >
-            {isEmailStep ? "Email OTP" : "Phone OTP"}
+            Email OTP
           </label>
 
           <input
-            id={isEmailStep ? "emailOtp" : "phoneOtp"}
-            value={isEmailStep ? emailOtp : phoneOtp}
+            id="emailOtp"
+            value={emailOtp}
             onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, "").slice(0, 6);
+              const value =
+                e.target.value
+                  .replace(/\D/g, "")
+                  .slice(0, 6);
 
-              if (isEmailStep) {
-                setEmailOtp(value);
-              } else {
-                setPhoneOtp(value);
-              }
+              setEmailOtp(value);
             }}
             inputMode="numeric"
             maxLength={6}
@@ -550,20 +509,12 @@ export function ContactForm({ services }: { services: Service[] }) {
           />
         </div>
 
-        {/* DEV PHONE OTP NOTE */}
-
-        {!isEmailStep && (
-          <div className="mt-5 rounded-2xl bg-black/[0.03] px-5 py-4 text-xs leading-6 text-black/45">
-            <span className="font-bold text-black">Development mode:</span>{" "}
-            Phone OTP is printed in your terminal console.
-          </div>
-        )}
-
         {/* ERROR */}
 
         {status === "error" && (
           <div className="mt-6 rounded-2xl bg-red-50 px-5 py-4 text-sm text-red-600">
-            {errorMessage || "Something went wrong. Please try again."}
+            {errorMessage ||
+              "Something went wrong. Please try again."}
           </div>
         )}
 
@@ -577,14 +528,12 @@ export function ContactForm({ services }: { services: Service[] }) {
               disabled={
                 resendSeconds > 0 ||
                 status === "sendingOtp" ||
-                status === "sendingPhoneOtp" ||
                 status === "verifyingEmail" ||
-                status === "verifyingPhone" ||
                 status === "submitting"
               }
               className="text-left text-xs font-black uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:text-black/20"
             >
-              {status === "sendingOtp" || status === "sendingPhoneOtp"
+              {status === "sendingOtp"
                 ? "Sending OTP..."
                 : resendSeconds > 0
                   ? `Resend OTP in ${resendSeconds}s`
@@ -598,7 +547,6 @@ export function ContactForm({ services }: { services: Service[] }) {
                 setStatus("idle");
                 setErrorMessage("");
                 setEmailOtp("");
-                setPhoneOtp("");
                 setResendSeconds(0);
               }}
               className="text-left text-xs font-medium text-black/40 hover:text-black"
@@ -609,33 +557,29 @@ export function ContactForm({ services }: { services: Service[] }) {
 
           <button
             type="button"
-            onClick={isEmailStep ? verifyEmailOtp : verifyPhoneOtp}
+            onClick={verifyEmailOtp}
             disabled={
               status === "verifyingEmail" ||
-              status === "verifyingPhone" ||
-              status === "sendingPhoneOtp" ||
               status === "submitting"
             }
             className="group flex items-center justify-center gap-4 rounded-full bg-black px-6 py-3.5 text-sm font-black text-white transition-all duration-300 hover:bg-lime-400 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
           >
             {status === "verifyingEmail" ||
-            status === "verifyingPhone" ||
-            status === "submitting" ||
-            status === "sendingPhoneOtp" ? (
+            status === "submitting" ? (
               <>
-                <Loader2 size={16} className="animate-spin" />
+                <Loader2
+                  size={16}
+                  className="animate-spin"
+                />
 
-                {status === "verifyingEmail"
+                {status ===
+                "verifyingEmail"
                   ? "Verifying Email"
-                  : status === "sendingPhoneOtp"
-                    ? "Sending Phone OTP"
-                    : status === "verifyingPhone"
-                      ? "Verifying Phone"
-                      : "Sending"}
+                  : "Sending"}
               </>
             ) : (
               <>
-                {isEmailStep ? "Verify Email" : "Verify Phone"}
+                Verify Email
 
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-black/10">
                   <ArrowUpRight
@@ -654,7 +598,10 @@ export function ContactForm({ services }: { services: Service[] }) {
   /* ================= CONTACT FORM ================= */
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-0">
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-0"
+    >
       {/* NAME */}
 
       <FormField
@@ -697,8 +644,12 @@ export function ContactForm({ services }: { services: Service[] }) {
                 value={phone}
                 countryCode={countryCode}
                 onPhoneChange={setPhone}
-                onCountryChange={(dialCode) => {
-                  setCountryCode(dialCode);
+                onCountryChange={(
+                  dialCode,
+                ) => {
+                  setCountryCode(
+                    dialCode,
+                  );
                   setPhone("");
                 }}
               />
@@ -739,13 +690,20 @@ export function ContactForm({ services }: { services: Service[] }) {
                 defaultValue=""
                 className="w-full appearance-none bg-transparent pr-10 text-base font-medium text-black/50 outline-none transition focus:text-black"
               >
-                <option value="">Select a service</option>
+                <option value="">
+                  Select a service
+                </option>
 
-                {services.map((service) => (
-                  <option key={service.id} value={service.id}>
-                    {service.name}
-                  </option>
-                ))}
+                {services.map(
+                  (service) => (
+                    <option
+                      key={service.id}
+                      value={service.id}
+                    >
+                      {service.name}
+                    </option>
+                  ),
+                )}
               </select>
 
               <ArrowUpRight
@@ -781,15 +739,24 @@ export function ContactForm({ services }: { services: Service[] }) {
                 defaultValue=""
                 className="w-full appearance-none bg-transparent pr-10 text-base font-medium text-black/50 outline-none transition focus:text-black"
               >
-                <option value="" disabled>
-                  Select preferred start time
+                <option
+                  value=""
+                  disabled
+                >
+                  Select preferred start
+                  time
                 </option>
 
-                {startTimeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
+                {startTimeOptions.map(
+                  (option) => (
+                    <option
+                      key={option.value}
+                      value={option.value}
+                    >
+                      {option.label}
+                    </option>
+                  ),
+                )}
               </select>
 
               <ArrowUpRight
@@ -814,7 +781,8 @@ export function ContactForm({ services }: { services: Service[] }) {
               htmlFor="message"
               className="block text-xs font-black uppercase tracking-[0.14em]"
             >
-              Tell us about your project
+              Tell us about your
+              project
             </label>
 
             <textarea
@@ -833,7 +801,8 @@ export function ContactForm({ services }: { services: Service[] }) {
 
       {status === "error" && (
         <div className="mt-6 rounded-2xl bg-red-50 px-5 py-4 text-sm text-red-600">
-          {errorMessage || "Something went wrong. Please try again."}
+          {errorMessage ||
+            "Something went wrong. Please try again."}
         </div>
       )}
 
@@ -841,22 +810,30 @@ export function ContactForm({ services }: { services: Service[] }) {
 
       <div className="flex flex-col gap-6 pt-8 sm:flex-row sm:items-center sm:justify-between">
         <p className="max-w-xs text-[10px] leading-5 text-black/30">
-          We&apos;ll only use your details to respond to this enquiry.
+          We&apos;ll only use your
+          details to respond to this
+          enquiry.
         </p>
 
         <button
           type="submit"
-          disabled={status === "sendingOtp"}
+          disabled={
+            status === "sendingOtp"
+          }
           className="group flex items-center justify-center gap-4 rounded-full bg-black px-6 py-3.5 text-sm font-black text-white transition-all duration-300 hover:bg-lime-400 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
         >
           {status === "sendingOtp" ? (
             <>
-              <Loader2 size={16} className="animate-spin" />
+              <Loader2
+                size={16}
+                className="animate-spin"
+              />
               Sending OTP
             </>
           ) : (
             <>
               Send enquiry
+
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-black/10">
                 <ArrowUpRight
                   size={14}

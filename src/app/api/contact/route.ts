@@ -1,25 +1,27 @@
 import { prisma } from "@/lib/prisma";
+
 import {
   NextRequest,
   NextResponse,
 } from "next/server";
+
 import { Resend } from "resend";
 
 import NewLeadEmail from "@/emails/NewLeadEmail";
 import ThankYouEmail from "@/emails/ThankYouEmail";
 
 const resend = new Resend(
-  process.env.RESEND_API_KEY
+  process.env.RESEND_API_KEY,
 );
 
 export async function POST(
-  request: NextRequest
+  request: NextRequest,
 ) {
   try {
     const body = await request.json();
 
     const verificationId = String(
-      body.verificationId ?? ""
+      body.verificationId ?? "",
     ).trim();
 
     /* -----------------------------------------
@@ -31,9 +33,9 @@ export async function POST(
         {
           success: false,
           error:
-            "Email and phone verification is required.",
+            "Email verification is required.",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -42,11 +44,13 @@ export async function POST(
     ----------------------------------------- */
 
     const verification =
-      await prisma.leadVerification.findUnique({
-        where: {
-          id: verificationId,
+      await prisma.leadVerification.findUnique(
+        {
+          where: {
+            id: verificationId,
+          },
         },
-      });
+      );
 
     if (!verification) {
       return NextResponse.json(
@@ -55,25 +59,22 @@ export async function POST(
           error:
             "Verification session not found or already used.",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
     /* -----------------------------------------
-       3. OTP VERIFICATION
+       3. EMAIL VERIFICATION
     ----------------------------------------- */
 
-    if (
-      !verification.emailVerified ||
-      !verification.phoneVerified
-    ) {
+    if (!verification.emailVerified) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "Please verify both email and phone before submitting.",
+            "Please verify your email before submitting.",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -81,12 +82,17 @@ export async function POST(
        4. CHECK EXPIRY
     ----------------------------------------- */
 
-    if (verification.expiresAt < new Date()) {
-      await prisma.leadVerification.delete({
-        where: {
-          id: verificationId,
+    if (
+      verification.expiresAt <
+      new Date()
+    ) {
+      await prisma.leadVerification.delete(
+        {
+          where: {
+            id: verificationId,
+          },
         },
-      });
+      );
 
       return NextResponse.json(
         {
@@ -94,7 +100,7 @@ export async function POST(
           error:
             "Verification session has expired. Please request a new OTP.",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -102,7 +108,8 @@ export async function POST(
        5. GET SERVICE
     ----------------------------------------- */
 
-    let serviceName = "General Enquiry";
+    let serviceName =
+      "General Enquiry";
 
     if (verification.serviceId) {
       const service =
@@ -110,6 +117,7 @@ export async function POST(
           where: {
             id: verification.serviceId,
           },
+
           select: {
             name: true,
           },
@@ -122,7 +130,7 @@ export async function POST(
             error:
               "Selected service was not found.",
           },
-          { status: 400 }
+          { status: 400 },
         );
       }
 
@@ -133,64 +141,70 @@ export async function POST(
        6. CREATE LEAD + CONSUME VERIFICATION
     ----------------------------------------- */
 
-    const lead = await prisma.$transaction(
-      async (tx) => {
-        // Re-check verification inside transaction
-        const currentVerification =
-          await tx.leadVerification.findUnique({
-            where: {
-              id: verificationId,
-            },
-          });
+    const lead =
+      await prisma.$transaction(
+        async (tx) => {
+          // Re-check verification
+          // inside transaction
+          const currentVerification =
+            await tx.leadVerification.findUnique(
+              {
+                where: {
+                  id: verificationId,
+                },
+              },
+            );
 
-        if (
-          !currentVerification ||
-          !currentVerification.emailVerified ||
-          !currentVerification.phoneVerified
-        ) {
-          throw new Error(
-            "VERIFICATION_ALREADY_USED"
+          if (
+            !currentVerification ||
+            !currentVerification.emailVerified
+          ) {
+            throw new Error(
+              "VERIFICATION_ALREADY_USED",
+            );
+          }
+
+          const createdLead =
+            await tx.lead.create({
+              data: {
+                name:
+                  currentVerification.name,
+
+                email:
+                  currentVerification.email,
+
+                phone:
+                  currentVerification.phone,
+
+                message:
+                  currentVerification.message,
+
+                city:
+                  currentVerification.city,
+
+                serviceId:
+                  currentVerification.serviceId,
+
+                preferredStartTime:
+                  currentVerification.preferredStartTime,
+
+                source: "website",
+              },
+            });
+
+          // Verification session
+          // is now consumed
+          await tx.leadVerification.delete(
+            {
+              where: {
+                id: verificationId,
+              },
+            },
           );
-        }
 
-        const createdLead =
-          await tx.lead.create({
-            data: {
-              name:
-                currentVerification.name,
-
-              email:
-                currentVerification.email,
-
-              phone:
-                currentVerification.phone,
-
-              message:
-                currentVerification.message,
-
-              city:
-                currentVerification.city,
-
-              serviceId:
-                currentVerification.serviceId,
-
-              preferredStartTime:
-                currentVerification.preferredStartTime,
-
-              source: "website",
-            },
-          });
-
-        // Verification session is now consumed
-        await tx.leadVerification.delete({
-          where: {
-            id: verificationId,
-          },
-        });
-
-        return createdLead;
-      }
-    );
+          return createdLead;
+        },
+      );
 
     /* -----------------------------------------
        7. EMAIL CONFIG
@@ -223,7 +237,8 @@ export async function POST(
             to: [companyEmail],
 
             replyTo:
-              lead.email ?? undefined,
+              lead.email ??
+              undefined,
 
             subject:
               `New Website Enquiry — ${lead.name}`,
@@ -235,13 +250,15 @@ export async function POST(
                 lead.name,
 
               clientEmail:
-                lead.email ?? undefined,
+                lead.email ??
+                undefined,
 
               phone:
                 lead.phone,
 
               city:
-                lead.city ?? undefined,
+                lead.city ??
+                undefined,
 
               serviceName,
 
@@ -250,28 +267,28 @@ export async function POST(
                 "Not specified",
 
               message:
-                lead.message ?? undefined,
+                lead.message ??
+                undefined,
 
-              leadId:
-                lead.id,
+              leadId: lead.id,
             }),
           });
 
         if (result.error) {
           console.error(
             "Company notification email failed:",
-            result.error
+            result.error,
           );
         }
       } catch (emailError) {
         console.error(
           "Company notification email failed:",
-          emailError
+          emailError,
         );
       }
     } else {
       console.error(
-        "Missing Resend configuration for company notification."
+        "Missing Resend configuration for company notification.",
       );
     }
 
@@ -305,18 +322,18 @@ export async function POST(
         if (result.error) {
           console.error(
             "Thank-you email failed:",
-            result.error
+            result.error,
           );
         }
       } catch (emailError) {
         console.error(
           "Thank-you email failed:",
-          emailError
+          emailError,
         );
       }
     } else {
       console.error(
-        "Missing Resend configuration for customer thank-you email."
+        "Missing Resend configuration for customer thank-you email.",
       );
     }
 
@@ -331,10 +348,9 @@ export async function POST(
         message:
           "Enquiry submitted successfully.",
 
-        leadId:
-          lead.id,
+        leadId: lead.id,
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     /* -----------------------------------------
@@ -353,7 +369,7 @@ export async function POST(
           error:
             "This verification has already been used. Please submit a new enquiry.",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -363,7 +379,7 @@ export async function POST(
 
     console.error(
       "CONTACT API ERROR:",
-      error
+      error,
     );
 
     return NextResponse.json(
@@ -373,7 +389,7 @@ export async function POST(
         error:
           "Unable to submit your enquiry. Please try again.",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
