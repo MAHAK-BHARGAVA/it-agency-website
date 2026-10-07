@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
   LockKeyhole,
   ShieldCheck,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import PhoneInput from "@/components/ui/PhoneInput";
 
 type ServiceOption = {
@@ -19,20 +20,30 @@ type Props = {
 };
 
 const startTimeOptions = [
-  { label: "Immediately", value: "Immediately" },
-  { label: "Within 1 Month", value: "Within 1 Month" },
-  { label: "Within 3 Months", value: "Within 3 Months" },
-  { label: "Just Exploring", value: "Just Exploring" },
+  {
+    label: "Immediately",
+    value: "Immediately",
+  },
+  {
+    label: "Within 1 Month",
+    value: "Within 1 Month",
+  },
+  {
+    label: "Within 3 Months",
+    value: "Within 3 Months",
+  },
+  {
+    label: "Just Exploring",
+    value: "Just Exploring",
+  },
 ];
 
-type Step = "form" | "emailOtp" | "phoneOtp";
+type Step = "form" | "emailOtp";
 
 type Status =
   | "idle"
   | "sendingOtp"
-  | "sendingPhoneOtp"
   | "verifyingEmail"
-  | "verifyingPhone"
   | "submitting"
   | "error";
 
@@ -41,7 +52,8 @@ export default function QuickEnquiryForm({
 }: Props) {
   const router = useRouter();
 
-  const [step, setStep] = useState<Step>("form");
+  const [step, setStep] =
+    useState<Step>("form");
 
   const [status, setStatus] =
     useState<Status>("idle");
@@ -51,8 +63,8 @@ export default function QuickEnquiryForm({
   const [verificationId, setVerificationId] =
     useState("");
 
-  const [emailOtp, setEmailOtp] = useState("");
-  const [phoneOtp, setPhoneOtp] = useState("");
+  const [emailOtp, setEmailOtp] =
+    useState("");
 
   const [resendCooldown, setResendCooldown] =
     useState(0);
@@ -64,21 +76,25 @@ export default function QuickEnquiryForm({
   const [phoneNumber, setPhoneNumber] =
     useState("");
 
-  const [formValues, setFormValues] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    serviceId: "",
-    preferredStartTime: "",
-    website: "",
-  });
+  const [formValues, setFormValues] =
+    useState({
+      name: "",
+      email: "",
+      phone: "",
+      serviceId: "",
+      preferredStartTime: "",
+      website: "",
+    });
 
   /* =========================================================
      BUILD COMPLETE INTERNATIONAL PHONE NUMBER
   ========================================================= */
 
   function getFullPhoneNumber() {
-    const digits = phoneNumber.replace(/\D/g, "");
+    const digits = phoneNumber.replace(
+      /\D/g,
+      "",
+    );
 
     return `${countryCode}${digits}`;
   }
@@ -107,7 +123,7 @@ export default function QuickEnquiryForm({
   ========================================================= */
 
   function validateForm(
-    values = formValues
+    values = formValues,
   ) {
     const {
       name,
@@ -123,19 +139,23 @@ export default function QuickEnquiryForm({
       name.length < 2 ||
       name.length > 100
     ) {
-      setError("Please enter your full name.");
+      setError(
+        "Please enter your full name.",
+      );
+
       return false;
     }
 
     if (
       !email ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
-        email
+        email,
       )
     ) {
       setError(
-        "Please enter a valid email address."
+        "Please enter a valid email address.",
       );
+
       return false;
     }
 
@@ -144,25 +164,31 @@ export default function QuickEnquiryForm({
       cleanedPhone.length > 15
     ) {
       setError(
-        "Please enter a valid contact number."
+        "Please enter a valid contact number.",
       );
+
       return false;
     }
 
-    const serviceIdNumber = Number(serviceId);
+    const serviceIdNumber =
+      Number(serviceId);
 
     if (
       !Number.isInteger(serviceIdNumber) ||
       serviceIdNumber <= 0
     ) {
-      setError("Please select a service.");
+      setError(
+        "Please select a service.",
+      );
+
       return false;
     }
 
     if (!preferredStartTime) {
       setError(
-        "Please select your preferred start time."
+        "Please select your preferred start time.",
       );
+
       return false;
     }
 
@@ -174,7 +200,7 @@ export default function QuickEnquiryForm({
   ========================================================= */
 
   async function sendOtp(
-    values = formValues
+    values = formValues,
   ) {
     setError("");
 
@@ -190,11 +216,15 @@ export default function QuickEnquiryForm({
         "/api/otp/send",
         {
           method: "POST",
+
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
+
           body: JSON.stringify({
             name: values.name,
+
             email: values.email
               .trim()
               .toLowerCase(),
@@ -202,43 +232,49 @@ export default function QuickEnquiryForm({
             phone: values.phone,
 
             serviceId: Number(
-              values.serviceId
+              values.serviceId,
             ),
 
             preferredStartTime:
               values.preferredStartTime,
           }),
-        }
+        },
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
           data.message ||
             data.error ||
-            "Unable to send verification OTP."
+            "Unable to send verification OTP.",
         );
       }
 
       setVerificationId(
-        data.verificationId
+        data.verificationId,
       );
 
       setEmailOtp("");
-      setPhoneOtp("");
 
       setStep("emailOtp");
+
       setStatus("idle");
 
       startResendCooldown();
     } catch (error) {
+      console.error(
+        "Email OTP send error:",
+        error,
+      );
+
       setStatus("error");
 
       setError(
         error instanceof Error
           ? error.message
-          : "Something went wrong while sending OTP."
+          : "Something went wrong while sending OTP.",
       );
     }
   }
@@ -252,17 +288,21 @@ export default function QuickEnquiryForm({
 
     if (!/^\d{6}$/.test(emailOtp)) {
       setError(
-        "Please enter the 6-digit email OTP."
+        "Please enter the 6-digit email OTP.",
       );
+
       setStatus("error");
+
       return;
     }
 
     if (!verificationId) {
       setError(
-        "Verification session not found. Please request OTP again."
+        "Verification session not found. Please request OTP again.",
       );
+
       setStatus("error");
+
       return;
     }
 
@@ -273,159 +313,50 @@ export default function QuickEnquiryForm({
         "/api/otp/verify-email",
         {
           method: "POST",
+
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
+
           body: JSON.stringify({
             verificationId,
+
             email: formValues.email
               .trim()
               .toLowerCase(),
+
             emailOtp,
           }),
-        }
+        },
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
           data.message ||
             data.error ||
-            "Invalid email OTP. Please try again."
+            "Invalid email OTP. Please try again.",
         );
       }
 
       // Email verified successfully.
-      // Now automatically send phone OTP.
-      await sendPhoneOtp();
-    } catch (error) {
-      setStatus("error");
-
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Email verification failed."
-      );
-    }
-  }
-
-  /* =========================================================
-     SEND PHONE OTP
-  ========================================================= */
-
-  async function sendPhoneOtp() {
-    setError("");
-    setStatus("sendingPhoneOtp");
-
-    try {
-      const response = await fetch(
-        "/api/otp/send-phone",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            verificationId,
-            email: formValues.email
-              .trim()
-              .toLowerCase(),
-            phone: formValues.phone,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            data.error ||
-            "Unable to send phone OTP."
-        );
-      }
-
-      setPhoneOtp("");
-
-      setStep("phoneOtp");
-      setStatus("idle");
-
-      startResendCooldown();
-    } catch (error) {
-      setStatus("error");
-
-      setError(
-        error instanceof Error
-          ? error.message
-          : "Unable to send phone OTP."
-      );
-    }
-  }
-
-  /* =========================================================
-     VERIFY PHONE OTP
-  ========================================================= */
-
-  async function verifyPhoneOtp() {
-    setError("");
-
-    if (!/^\d{6}$/.test(phoneOtp)) {
-      setError(
-        "Please enter the 6-digit phone OTP."
-      );
-      setStatus("error");
-      return;
-    }
-
-    if (!verificationId) {
-      setError(
-        "Verification session not found. Please start again."
-      );
-      setStatus("error");
-      return;
-    }
-
-    setStatus("verifyingPhone");
-
-    try {
-      const response = await fetch(
-        "/api/otp/verify-phone",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            verificationId,
-            email: formValues.email
-              .trim()
-              .toLowerCase(),
-            phone: formValues.phone,
-            phoneOtp,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(
-          data.message ||
-            data.error ||
-            "Invalid phone OTP. Please try again."
-        );
-      }
-
-      // Both email + phone are now verified.
+      // Now submit the lead.
       await submitLead();
     } catch (error) {
+      console.error(
+        "Email OTP verification error:",
+        error,
+      );
+
       setStatus("error");
 
       setError(
         error instanceof Error
           ? error.message
-          : "Phone verification failed."
+          : "Email verification failed.",
       );
     }
   }
@@ -436,6 +367,7 @@ export default function QuickEnquiryForm({
 
   async function submitLead() {
     setError("");
+
     setStatus("submitting");
 
     try {
@@ -443,22 +375,26 @@ export default function QuickEnquiryForm({
         "/api/contact",
         {
           method: "POST",
+
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type":
+              "application/json",
           },
+
           body: JSON.stringify({
             verificationId,
           }),
-        }
+        },
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
           data.message ||
             data.error ||
-            "Unable to submit your enquiry."
+            "Unable to submit your enquiry.",
         );
       }
 
@@ -466,12 +402,17 @@ export default function QuickEnquiryForm({
 
       router.push("/thank-you");
     } catch (error) {
+      console.error(
+        "Lead submission error:",
+        error,
+      );
+
       setStatus("error");
 
       setError(
         error instanceof Error
           ? error.message
-          : "Something went wrong. Please try again."
+          : "Something went wrong. Please try again.",
       );
     }
   }
@@ -481,19 +422,14 @@ export default function QuickEnquiryForm({
   ========================================================= */
 
   async function resendEmailOtp() {
-    if (resendCooldown > 0) return;
+    if (
+      resendCooldown > 0 ||
+      status === "sendingOtp"
+    ) {
+      return;
+    }
 
     await sendOtp(formValues);
-  }
-
-  /* =========================================================
-     RESEND PHONE OTP
-  ========================================================= */
-
-  async function resendPhoneOtp() {
-    if (resendCooldown > 0) return;
-
-    await sendPhoneOtp();
   }
 
   /* =========================================================
@@ -501,48 +437,51 @@ export default function QuickEnquiryForm({
   ========================================================= */
 
   async function handleSubmit(
-    event: React.FormEvent<HTMLFormElement>
+    event: React.FormEvent<HTMLFormElement>,
   ) {
     event.preventDefault();
 
     if (
       status === "sendingOtp" ||
-      status === "sendingPhoneOtp" ||
       status === "verifyingEmail" ||
-      status === "verifyingPhone" ||
       status === "submitting"
     ) {
       return;
     }
 
-    const form = event.currentTarget;
-    const formData = new FormData(form);
+    const form =
+      event.currentTarget;
 
-    const fullPhone = getFullPhoneNumber();
+    const formData =
+      new FormData(form);
+
+    const fullPhone =
+      getFullPhoneNumber();
 
     const values = {
       name: String(
-        formData.get("name") ?? ""
+        formData.get("name") ?? "",
       ).trim(),
 
       email: String(
-        formData.get("email") ?? ""
+        formData.get("email") ?? "",
       ).trim(),
 
       phone: fullPhone,
 
       serviceId: String(
-        formData.get("serviceId") ?? ""
+        formData.get("serviceId") ?? "",
       ),
 
-      preferredStartTime: String(
-        formData.get(
-          "preferredStartTime"
-        ) ?? ""
-      ),
+      preferredStartTime:
+        String(
+          formData.get(
+            "preferredStartTime",
+          ) ?? "",
+        ),
 
       website: String(
-        formData.get("website") ?? ""
+        formData.get("website") ?? "",
       ).trim(),
     };
 
@@ -550,6 +489,7 @@ export default function QuickEnquiryForm({
 
     if (!validateForm(values)) {
       setStatus("error");
+
       return;
     }
 
@@ -570,6 +510,7 @@ export default function QuickEnquiryForm({
         />
 
         <div className="relative z-10">
+
           {/* =====================================================
               FORM
           ===================================================== */}
@@ -593,6 +534,7 @@ export default function QuickEnquiryForm({
                 onSubmit={handleSubmit}
                 className="mt-7 space-y-4"
               >
+
                 {/* HONEYPOT */}
 
                 <div
@@ -694,7 +636,10 @@ export default function QuickEnquiryForm({
                     defaultValue=""
                     className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-black outline-none transition focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
                   >
-                    <option value="" disabled>
+                    <option
+                      value=""
+                      disabled
+                    >
                       Select a service
                     </option>
 
@@ -706,7 +651,7 @@ export default function QuickEnquiryForm({
                         >
                           {service.name}
                         </option>
-                      )
+                      ),
                     )}
                   </select>
                 </div>
@@ -728,7 +673,10 @@ export default function QuickEnquiryForm({
                     defaultValue=""
                     className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-black outline-none transition focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
                   >
-                    <option value="" disabled>
+                    <option
+                      value=""
+                      disabled
+                    >
                       Select preferred start time
                     </option>
 
@@ -740,7 +688,7 @@ export default function QuickEnquiryForm({
                         >
                           {option.label}
                         </option>
-                      )
+                      ),
                     )}
                   </select>
                 </div>
@@ -764,16 +712,14 @@ export default function QuickEnquiryForm({
                     status ===
                       "sendingOtp" ||
                     status ===
-                      "sendingPhoneOtp" ||
-                    status ===
                       "verifyingEmail" ||
                     status ===
-                      "verifyingPhone" ||
-                    status === "submitting"
+                      "submitting"
                   }
                   className="group flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-lime-400 px-6 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-all duration-300 hover:-translate-y-1 hover:bg-lime-300 hover:shadow-[0_16px_40px_rgba(163,230,53,0.25)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                 >
-                  {status === "sendingOtp"
+                  {status ===
+                  "sendingOtp"
                     ? "Sending OTP..."
                     : "Verify & Continue"}
 
@@ -822,6 +768,7 @@ export default function QuickEnquiryForm({
               </p>
 
               <div className="mt-7 space-y-5">
+
                 {/* EMAIL OTP */}
 
                 <div>
@@ -842,8 +789,11 @@ export default function QuickEnquiryForm({
                     onChange={(event) =>
                       setEmailOtp(
                         event.target.value
-                          .replace(/\D/g, "")
-                          .slice(0, 6)
+                          .replace(
+                            /\D/g,
+                            "",
+                          )
+                          .slice(0, 6),
                       )
                     }
                     placeholder="Enter 6-digit email OTP"
@@ -872,8 +822,7 @@ export default function QuickEnquiryForm({
                   disabled={
                     status ===
                       "verifyingEmail" ||
-                    status ===
-                      "sendingPhoneOtp"
+                    status === "submitting"
                   }
                   className="group flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-lime-400 px-6 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-all duration-300 hover:-translate-y-1 hover:bg-lime-300 hover:shadow-[0_16px_40px_rgba(163,230,53,0.25)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
                 >
@@ -881,14 +830,14 @@ export default function QuickEnquiryForm({
                   "verifyingEmail"
                     ? "Verifying Email..."
                     : status ===
-                        "sendingPhoneOtp"
-                      ? "Sending Phone OTP..."
+                        "submitting"
+                      ? "Submitting..."
                       : "Verify Email"}
 
                   {status !==
                     "verifyingEmail" &&
                     status !==
-                      "sendingPhoneOtp" && (
+                      "submitting" && (
                       <ArrowUpRight className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
                     )}
                 </button>
@@ -902,13 +851,14 @@ export default function QuickEnquiryForm({
                       resendEmailOtp
                     }
                     disabled={
-                      resendCooldown > 0 ||
+                      resendCooldown >
+                        0 ||
                       status ===
                         "sendingOtp" ||
                       status ===
                         "verifyingEmail" ||
                       status ===
-                        "sendingPhoneOtp"
+                        "submitting"
                     }
                     className="text-sm font-bold text-black underline decoration-black/20 underline-offset-4 transition hover:text-lime-600 disabled:cursor-not-allowed disabled:opacity-40"
                   >
@@ -930,7 +880,6 @@ export default function QuickEnquiryForm({
                     setStep("form");
                     setError("");
                     setEmailOtp("");
-                    setPhoneOtp("");
                     setStatus("idle");
                   }}
                   className="w-full text-center text-xs font-bold text-black/45 transition hover:text-black"
@@ -943,163 +892,6 @@ export default function QuickEnquiryForm({
 
                   Your email is verified securely
                   before we continue.
-                </p>
-              </div>
-            </>
-          )}
-
-          {/* =====================================================
-              PHONE OTP
-          ===================================================== */}
-
-          {step === "phoneOtp" && (
-            <>
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-lime-400/15">
-                <ShieldCheck className="h-7 w-7 text-lime-600" />
-              </div>
-
-              <p className="mt-6 text-xs font-black uppercase tracking-[0.28em] text-lime-600">
-                Phone Verification
-              </p>
-
-              <h2 className="mt-3 text-3xl font-black leading-tight text-black sm:text-4xl">
-                One Last Step
-              </h2>
-
-              <p className="mt-3 text-sm leading-6 text-black/55">
-                Enter the 6-digit verification
-                code sent to your phone number.
-              </p>
-
-              <div className="mt-7 space-y-5">
-                {/* PHONE OTP */}
-
-                <div>
-                  <label
-                    htmlFor="phoneOtp"
-                    className="mb-2 block text-sm font-bold text-black"
-                  >
-                    Phone OTP
-                  </label>
-
-                  <input
-                    id="phoneOtp"
-                    type="text"
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={phoneOtp}
-                    onChange={(event) =>
-                      setPhoneOtp(
-                        event.target.value
-                          .replace(/\D/g, "")
-                          .slice(0, 6)
-                      )
-                    }
-                    placeholder="Enter 6-digit phone OTP"
-                    className="h-14 w-full rounded-2xl border border-black/10 bg-[#f6f6f2] px-5 text-center text-lg font-bold tracking-[0.35em] text-black outline-none transition placeholder:text-sm placeholder:tracking-normal placeholder:text-black/35 focus:border-lime-500 focus:bg-white focus:ring-4 focus:ring-lime-400/10"
-                  />
-                </div>
-
-                {/* LOCAL DEV NOTE */}
-
-                <p className="rounded-xl border border-lime-200 bg-lime-50 px-4 py-3 text-center text-xs leading-5 text-black/55">
-                  During local development, the
-                  phone OTP is available in your
-                  server terminal.
-                </p>
-
-                {/* ERROR */}
-
-                {error && (
-                  <p
-                    role="alert"
-                    className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
-                  >
-                    {error}
-                  </p>
-                )}
-
-                {/* VERIFY PHONE */}
-
-                <button
-                  type="button"
-                  onClick={
-                    verifyPhoneOtp
-                  }
-                  disabled={
-                    status ===
-                      "verifyingPhone" ||
-                    status === "submitting"
-                  }
-                  className="group flex min-h-14 w-full items-center justify-center gap-3 rounded-full bg-lime-400 px-6 py-4 text-sm font-black uppercase tracking-[0.12em] text-black transition-all duration-300 hover:-translate-y-1 hover:bg-lime-300 hover:shadow-[0_16px_40px_rgba(163,230,53,0.25)] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
-                >
-                  {status ===
-                  "verifyingPhone"
-                    ? "Verifying Phone..."
-                    : status ===
-                        "submitting"
-                      ? "Submitting..."
-                      : "Verify & Submit"}
-
-                  {status !==
-                    "verifyingPhone" &&
-                    status !==
-                      "submitting" && (
-                      <ArrowUpRight className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1" />
-                    )}
-                </button>
-
-                {/* RESEND PHONE OTP */}
-
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={
-                      resendPhoneOtp
-                    }
-                    disabled={
-                      resendCooldown > 0 ||
-                      status ===
-                        "sendingPhoneOtp" ||
-                      status ===
-                        "verifyingPhone" ||
-                      status ===
-                        "submitting"
-                    }
-                    className="text-sm font-bold text-black underline decoration-black/20 underline-offset-4 transition hover:text-lime-600 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    {status ===
-                    "sendingPhoneOtp"
-                      ? "Sending..."
-                      : resendCooldown >
-                          0
-                        ? `Resend phone OTP in ${resendCooldown}s`
-                        : "Resend phone OTP"}
-                  </button>
-                </div>
-
-                {/* BACK */}
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep("form");
-                    setError("");
-                    setEmailOtp("");
-                    setPhoneOtp("");
-                    setStatus("idle");
-                  }}
-                  className="w-full text-center text-xs font-bold text-black/45 transition hover:text-black"
-                >
-                  ← Edit your details
-                </button>
-
-                <p className="flex items-start justify-center gap-2 text-center text-xs leading-5 text-black/45">
-                  <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
-
-                  Your contact details are verified
-                  securely before your enquiry is
-                  submitted.
                 </p>
               </div>
             </>
