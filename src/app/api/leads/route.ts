@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Email and phone verification is required.",
+          error: "Email verification is required.",
         },
         { status: 403 }
       );
@@ -51,18 +51,15 @@ export async function POST(request: NextRequest) {
     }
 
     /* -----------------------------------------
-       3. OTP VERIFICATION
+       3. EMAIL OTP VERIFICATION
     ----------------------------------------- */
 
-    if (
-      !verification.emailVerified ||
-      !verification.phoneVerified
-    ) {
+    if (!verification.emailVerified) {
       return NextResponse.json(
         {
           success: false,
           error:
-            "Please verify both email and phone before submitting.",
+            "Please verify your email before submitting.",
         },
         { status: 403 }
       );
@@ -135,8 +132,7 @@ export async function POST(request: NextRequest) {
 
         if (
           !currentVerification ||
-          !currentVerification.emailVerified ||
-          !currentVerification.phoneVerified
+          !currentVerification.emailVerified
         ) {
           throw new Error(
             "VERIFICATION_ALREADY_USED"

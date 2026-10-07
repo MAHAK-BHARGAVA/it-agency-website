@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { FooterColumn as Column } from "./footer.types";
+import type { FooterColumnType as Column } from "./footer.types";
 
 type Props = {
   column: Column;
