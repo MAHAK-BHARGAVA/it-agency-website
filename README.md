@@ -1,21 +1,26 @@
 # Soclthry — Full-Stack IT Agency Website & CMS
 
-**A Freelance Client Project | Full-Stack Web Development | Next.js · React · TypeScript · Prisma · MySQL**
+**Completed Freelance Client Project | Full-Stack Web Development**
 
-Soclthry is a modern, full-stack IT agency website developed as a freelance project for a client. The platform combines a responsive public-facing website with a database-driven content management system (CMS), administrative dashboard, portfolio management, lead management, email verification, and SEO-focused dynamic pages.
+A modern, database-driven IT agency website built with **Next.js, React, TypeScript, Tailwind CSS, Prisma ORM, and MySQL**.
 
-Built using Next.js, React, TypeScript, Tailwind CSS, Prisma ORM, and MySQL, the application is designed to help the client establish a professional digital presence, showcase services and project work, manage website content, and streamline prospective client enquiries.
+Soclthry is a completed freelance web development project built for a client in the IT services industry. It combines a responsive public-facing website with a content management system (CMS), administrative dashboard, portfolio management, lead management, email OTP verification, and SEO-focused dynamic pages.
 
-The project goes beyond a static marketing website by integrating frontend development, backend API routes, relational database operations, authentication, media management, and transactional email workflows within a unified application.
+The application integrates frontend development, backend API development, relational database management, authentication, media management, and transactional email workflows within a unified Next.js application.
+
+**Project Type:** Freelance Client Project
+**Project Status:** Completed
+**Role:** Full-Stack Developer
+
+**Repository:** [GitHub — it-agency-website](https://github.com/MAHAK-BHARGAVA/it-agency-website)
 
 ---
 
 ## Table of Contents
 
 * [Project Overview](#project-overview)
-* [Project Details](#project-details)
+* [Project Objectives](#project-objectives)
 * [My Role and Responsibilities](#my-role-and-responsibilities)
-* [Business Objectives](#business-objectives)
 * [Technology Stack](#technology-stack)
 * [Key Features](#key-features)
 * [Application Architecture](#application-architecture)
@@ -27,76 +32,66 @@ The project goes beyond a static marketing website by integrating frontend devel
 * [Authentication and Security](#authentication-and-security)
 * [SEO and Metadata](#seo-and-metadata)
 * [Media Management](#media-management)
-* [Database and Data Flow](#database-and-data-flow)
+* [Database Design and Data Flow](#database-design-and-data-flow)
 * [Project Structure](#project-structure)
-* [Environment Configuration](#environment-configuration)
-* [Getting Started](#getting-started)
+* [Environment Variables](#environment-variables)
+* [Installation and Setup](#installation-and-setup)
+* [Running the Application](#running-the-application)
 * [Production Build](#production-build)
-* [Future Improvements](#future-improvements)
+* [Future Enhancements](#future-enhancements)
 * [Author](#author)
 
 ---
 
 ## Project Overview
 
-Soclthry is a full-stack web application developed to support the digital presence and day-to-day website management needs of an IT agency.
+Soclthry is a full-stack web application developed to support the online presence and website management needs of an IT agency.
 
-The platform consists of three major components:
+The platform allows prospective clients to explore services, review project work, learn about the agency, and submit enquiries. On the administrative side, it provides tools for managing website content and incoming leads through a centralized interface.
 
-1. **Public Website:** Presents the agency's services, portfolio, expertise, testimonials, FAQs, and contact information.
-2. **Admin Dashboard and CMS:** Provides administrative workflows for managing website content and incoming enquiries.
-3. **Backend and Integrations:** Handles API requests, database operations, authentication, email OTP verification, media management, and transactional email notifications.
+The application is built around three main layers:
 
-The application uses a database-driven approach so that supported website content can be managed through the administrative interface rather than hardcoded into individual pages.
+1. **Presentation Layer:** Responsive website pages and reusable React components.
+2. **Application Layer:** Server-side logic, API endpoints, authentication, and enquiry workflows.
+3. **Data and Integration Layer:** MySQL database access through Prisma ORM, transactional email delivery through Resend, and media management through Cloudinary.
 
-## Project Details
+The database-driven architecture makes it possible to manage supported website content without hardcoding every service or portfolio page.
 
-| Attribute         | Description                                                              |
-| ----------------- | ------------------------------------------------------------------------ |
-| Project Name      | Soclthry                                                                 |
-| Project Type      | Freelance Client Project                                                 |
-| Domain            | IT Services and Digital Solutions                                        |
-| Application Type  | Full-Stack Web Application                                               |
-| Frontend          | Next.js, React, TypeScript                                               |
-| Styling           | Tailwind CSS                                                             |
-| Backend           | Next.js App Router and Route Handlers                                    |
-| Database          | MySQL                                                                    |
-| ORM               | Prisma ORM                                                               |
-| Email Integration | Resend                                                                   |
-| Media Integration | Cloudinary                                                               |
-| Repository        | [GitHub Repository](https://github.com/MAHAK-BHARGAVA/it-agency-website) |
+## Project Objectives
 
-## My Role and Responsibilities
+The primary objectives of the project were to:
 
-Working on this freelance project involves full-stack development and integration across the application's frontend, backend, and database layers.
-
-Responsibilities include, according to the modules implemented:
-
-* Developing responsive user interfaces for the public-facing website.
-* Building reusable React components using Next.js and TypeScript.
-* Integrating application functionality with MySQL using Prisma ORM.
-* Implementing database-driven service, portfolio, and location-specific pages.
-* Developing administrative interfaces for website content and enquiry management.
-* Implementing email OTP verification for enquiry submissions.
-* Integrating transactional email notifications using Resend.
-* Integrating Cloudinary for hosted images and media.
-* Implementing dynamic metadata and SEO-oriented page structures.
-* Testing application workflows, resolving build errors, and improving responsiveness.
+* Develop a professional and responsive website for an IT agency.
+* Present services, project work, and business information effectively.
+* Enable centralized website content management through an admin dashboard.
+* Implement database-driven service and portfolio pages.
+* Capture and persist prospective client enquiries.
+* Introduce email verification into the enquiry submission workflow.
+* Automate enquiry notifications and customer confirmation emails.
+* Support SEO-oriented dynamic pages and metadata.
+* Build a maintainable foundation for future business requirements.
 
 ---
 
-## Business Objectives
+## My Role and Responsibilities
 
-The platform is designed to address common operational needs of an IT agency.
+**Role: Full-Stack Developer | Freelance Client Project**
 
-* Establish a professional and responsive online presence.
-* Showcase services, capabilities, and project work.
-* Centralize supported website content in an administrative dashboard.
-* Capture and store prospective client enquiries.
-* Streamline enquiry verification and email communication.
-* Create reusable service pages for different locations.
-* Improve page discoverability through SEO-oriented implementation.
-* Provide a maintainable foundation for future business requirements.
+The project involved development and integration across the frontend, backend, database, and external services.
+
+Key responsibilities included:
+
+* Developing responsive user interfaces using React, Next.js, TypeScript, and Tailwind CSS.
+* Building reusable components and page layouts.
+* Implementing backend API endpoints using Next.js Route Handlers.
+* Integrating MySQL with Prisma ORM for persistent data operations.
+* Developing database-driven service and portfolio pages.
+* Implementing administrative workflows for supported CMS modules.
+* Building email OTP verification for enquiry submissions.
+* Integrating transactional email delivery through Resend.
+* Integrating Cloudinary for media management.
+* Implementing SEO-oriented metadata for relevant dynamic pages.
+* Testing application workflows and resolving build and integration issues.
 
 ---
 
@@ -107,34 +102,34 @@ The platform is designed to address common operational needs of an IT agency.
 | Technology     | Purpose                                       |
 | -------------- | --------------------------------------------- |
 | Next.js        | Application framework, routing, and rendering |
-| React          | Component-based user interface                |
-| TypeScript     | Type safety and maintainable application code |
-| Tailwind CSS   | Responsive styling and layout                 |
+| React          | Component-based UI development                |
+| TypeScript     | Type safety and maintainable code             |
+| Tailwind CSS   | Responsive styling and layouts                |
 | Framer Motion  | UI animations and transitions                 |
-| GSAP           | Advanced animation effects, where used        |
-| Lucide React   | Interface icons                               |
-| HTML5 and CSS3 | Web structure and styling foundations         |
+| GSAP           | Animation effects where used                  |
+| Lucide React   | UI icons                                      |
+| HTML5 and CSS3 | Web structure and styling                     |
 
 ### Backend and Database
 
-| Technology         | Purpose                                          |
-| ------------------ | ------------------------------------------------ |
-| Next.js App Router | Application routing and server-side capabilities |
-| Route Handlers     | Backend API endpoints                            |
-| Prisma ORM         | Typed database access and data operations        |
-| MySQL              | Persistent relational data storage               |
-| JWT                | Token-based authentication                       |
-| bcryptjs           | Password hashing                                 |
+| Technology             | Purpose                                          |
+| ---------------------- | ------------------------------------------------ |
+| Next.js App Router     | Application routing and server-side capabilities |
+| Next.js Route Handlers | Backend API endpoints                            |
+| Prisma ORM             | Typed database queries and data operations       |
+| MySQL                  | Relational database                              |
+| JWT                    | Token-based authentication                       |
+| bcryptjs               | Password hashing                                 |
 
 ### External Services and Tools
 
-| Service or Tool | Purpose                               |
-| --------------- | ------------------------------------- |
-| Resend          | Transactional email delivery          |
-| Cloudinary      | Image and media management            |
-| Git             | Version control                       |
-| GitHub          | Source code hosting and collaboration |
-| Postman         | API testing                           |
+| Service or Tool | Purpose                      |
+| --------------- | ---------------------------- |
+| Resend          | Transactional email delivery |
+| Cloudinary      | Image and media management   |
+| Git             | Version control              |
+| GitHub          | Source code hosting          |
+| Postman         | API testing                  |
 
 ---
 
@@ -142,15 +137,14 @@ The platform is designed to address common operational needs of an IT agency.
 
 ### Public Website
 
-* Responsive navigation for different screen sizes.
-* Homepage with agency introduction and key content sections.
-* Service listing and service detail pages.
+* Responsive layouts for mobile, tablet, and desktop.
+* Homepage with agency introduction and content sections.
+* Service listing and detail pages.
 * Portfolio listing and individual project pages.
 * Testimonials and FAQs.
 * Contact and enquiry forms.
 * Reusable UI components.
-* Interactive elements and animation effects.
-* Responsive layouts for mobile, tablet, and desktop.
+* Interactive elements and animations.
 
 ### Admin Dashboard and CMS
 
@@ -158,113 +152,114 @@ The platform is designed to address common operational needs of an IT agency.
 * Service and portfolio content management.
 * FAQ and testimonial management.
 * Lead and enquiry management.
-* Homepage content and site settings management, where implemented.
+* Homepage content and site settings management where implemented.
 * Database-backed content operations.
 * Cloudinary integration for supported media workflows.
 
 ### Backend and Integrations
 
-* API endpoints implemented using Next.js Route Handlers.
+* API endpoints implemented with Next.js Route Handlers.
 * Prisma-based MySQL operations.
-* Email OTP verification before enquiry submission.
+* Email OTP verification.
 * Persistent lead storage.
-* Automated company and customer email notifications.
+* Company and customer email notifications.
 * JWT-based authentication infrastructure.
-* Input validation and error handling across implemented workflows.
+* Input validation and error handling in application workflows.
 
 ---
 
 ## Application Architecture
 
-The application follows a full-stack architecture within a single Next.js codebase.
+The application follows a full-stack architecture within a single Next.js project.
 
 ```text
                  Public Website
                        |
-                Next.js / React
+                 Next.js / React
                        |
-          ---------------------------
-          |                         |
-     Server Components        API Route Handlers
-          |                         |
-          |                 Validation and Logic
-          |                         |
-          ----------- Prisma ORM ----
+          +------------+-------------+
+          |                          |
+    Server Components          API Route Handlers
+          |                          |
+          |                  Validation and Logic
+          |                          |
+          +----------- Prisma ORM ---+
                        |
-                    MySQL
+                     MySQL
                        |
-          ---------------------------
-          |                         |
-     Website Content          Leads and Users
+          +------------+-------------+
+          |                          |
+     Website Content            Leads and Users
+
 
 External Integrations
-    |                    |
-  Resend              Cloudinary
-    |                    |
- Email Delivery       Media Storage
+    |
+    +---- Resend ------> Transactional Emails
+    |
+    +---- Cloudinary --> Hosted Media
 ```
 
-### Architectural approach
+### Architectural Approach
 
-* **Presentation layer:** React components and Next.js pages render the user interface.
-* **Application layer:** Server components and route handlers process requests and implement application workflows.
-* **Data layer:** Prisma ORM provides typed access to MySQL.
-* **Integration layer:** Resend and Cloudinary provide external email and media capabilities.
+* **Presentation:** React components and Next.js pages render the user interface.
+* **Application Logic:** Server components and route handlers process requests and apply business rules.
+* **Persistence:** Prisma ORM provides typed access to MySQL.
+* **External Services:** Resend handles email delivery, while Cloudinary supports media management.
 
-Keeping these responsibilities organized within a single application simplifies development and provides a foundation for future extension.
+This structure keeps the application within a unified codebase while separating presentation, business logic, and data access responsibilities.
 
 ---
 
 ## Public Website
 
-The public website serves as the primary interface between the agency and prospective clients.
+The public-facing website acts as the primary interface between the agency and prospective clients.
 
-### Main sections
+### Main Sections
 
 * **Home:** Introduces the agency and its services.
 * **About:** Presents the agency's background and capabilities.
 * **Services:** Displays available IT and digital services.
-* **Portfolio:** Showcases project work and relevant details.
-* **Testimonials:** Displays client feedback where available.
-* **FAQs:** Answers frequently asked questions.
-* **Contact:** Allows visitors to submit enquiries.
+* **Portfolio:** Showcases projects and their details.
+* **Testimonials:** Presents client feedback where available.
+* **FAQs:** Answers common questions.
+* **Contact:** Enables visitors to submit project enquiries.
 
-The interface uses reusable components, responsive Tailwind CSS layouts, and animation libraries to maintain a consistent visual experience across devices.
+The interface uses reusable React components, responsive Tailwind CSS layouts, and animation libraries to provide a consistent experience across screen sizes.
 
 ---
 
 ## Content Management System
 
-The CMS enables administrators to manage supported website content through the dashboard instead of editing source files for every content change.
+The CMS enables administrators to manage supported website content through the dashboard rather than editing individual pages directly in source code.
 
 ### Service Management
 
-Service records can contain:
+Service records can include:
 
 * Service name and slug.
 * Description and image.
 * SEO title and meta description.
 * Canonical URL.
 * Open Graph image.
-* Associations with locations and industries, where configured.
+* Associations with cities, states, and industries where configured.
 
 ### Portfolio Management
 
-Portfolio records can contain:
+Portfolio records can include:
 
 * Project name and slug.
-* Project thumbnail.
+* Thumbnail or project image.
 * Client name and project URL.
 * Project challenge, solution, and process.
 * Project summary or results.
 * Related services and industries.
-* Client testimonial, where available.
+* Client testimonial where available.
 
 ### Additional Content Management
 
-The application also includes management modules for supported content such as FAQs, testimonials, leads, and website settings.
+The application also includes administrative modules for supported content such as FAQs, testimonials, leads, and site settings.
 
-The relevant public pages retrieve database records and display the available information, helping maintain consistency between the CMS and the public website.
+Public pages retrieve relevant records from the database, helping keep the website content aligned with the CMS.
 
 ---
 
@@ -279,23 +274,23 @@ The application supports database-driven service pages and location-specific ser
 /services/[service]/[city]
 ```
 
-The service slug identifies the requested service. A city-specific route can provide content tailored to a particular location.
+The service slug identifies the requested service, while a city-specific route allows content to be tailored to a location.
 
 ### Request Flow
 
 1. Receive the requested service and optional city slug.
 2. Retrieve the corresponding database records.
-3. Render the page using the available content.
-4. Generate appropriate metadata for supported routes.
+3. Render the page using available service and location information.
+4. Generate metadata for supported routes.
 5. Return a not-found response when the requested content does not exist.
 
-This approach supports reusable page templates and allows the website to expand its service and location coverage without requiring a separate hardcoded component for every page.
+This reusable routing approach provides a foundation for expanding service and location coverage without creating a separate hardcoded page for every combination.
 
 ---
 
 ## Portfolio Management
 
-The portfolio module connects the administrative content workflow with the public project showcase.
+The portfolio module connects the administrative workflow with the public project showcase.
 
 ### Example Routes
 
@@ -304,22 +299,22 @@ The portfolio module connects the administrative content workflow with the publi
 /portfolio/[project]
 ```
 
-The portfolio listing retrieves project records, while the individual project route uses a slug to locate and render the corresponding project details.
+The portfolio listing retrieves project records, while the individual project route uses a slug to locate and display the corresponding project.
 
-Depending on the available record, a project page can present its thumbnail, client information, description, challenge, solution, process, related services, and testimonial.
+Depending on the available database record, a project page can present its thumbnail, client information, description, challenge, solution, process, related services, and testimonial.
 
-This database-driven approach makes it easier to maintain and extend the agency's project showcase as new work is added.
+This structure makes portfolio content easier to maintain as new projects are added.
 
 ---
 
 ## Enquiry and Lead Management
 
-The enquiry system connects the public contact form to the backend, database, and email service.
+The enquiry system connects the public contact form to the backend, database, and transactional email service.
 
 ### Enquiry Workflow
 
 ```text
-Visitor submits enquiry details
+Visitor completes enquiry form
               |
               v
        Email OTP is sent
@@ -345,17 +340,17 @@ Visitor submits enquiry details
 The email verification workflow is designed to verify the visitor's email address before accepting an enquiry.
 
 * A six-digit OTP is generated.
-* The verification code is delivered by email.
-* The stored OTP is hashed rather than saved as plaintext.
-* The OTP has a limited validity period.
+* The verification code is delivered to the visitor's email address.
+* The OTP is stored as a hash rather than plaintext.
+* The verification code has a limited validity period.
 * Verification attempts and resend requests are restricted by the implemented checks.
-* The backend checks verification status before accepting the enquiry.
+* The backend checks email verification status before accepting the enquiry.
 
-The current workflow uses **email OTP verification only**. The phone number is collected as contact information; phone/SMS OTP verification is not part of this flow.
+**The current workflow uses email OTP verification only.** The phone number is collected as contact information; phone/SMS OTP verification is not part of this flow.
 
 ### Lead Storage
 
-After successful verification, the application stores the enquiry in MySQL. Depending on the submitted form, lead information can include:
+After successful verification, the enquiry is stored in MySQL. Depending on the form submission, the record can include:
 
 * Name.
 * Email address.
@@ -370,10 +365,10 @@ After successful verification, the application stores the enquiry in MySQL. Depe
 
 Resend is integrated for transactional email delivery.
 
-The enquiry workflow sends:
+The workflow sends:
 
 1. A new-enquiry notification to the company's configured email address.
-2. A thank-you or confirmation email to the visitor.
+2. A confirmation or thank-you email to the visitor.
 
 This helps streamline enquiry handling and provides confirmation to prospective clients.
 
@@ -390,18 +385,18 @@ Security-related implementation includes:
 * HTTP-only cookies where configured.
 * Server-side checks for protected operations.
 * Hashed OTP storage.
-* OTP expiration and verification-attempt limits.
+* OTP expiry and verification-attempt limits.
 * Environment variables for sensitive credentials.
 
 ### Production Security Considerations
 
-For a production deployment, all protected API operations should enforce server-side authentication and role-based authorization. Additional safeguards should include appropriate rate limiting, strong secrets, HTTPS, secure cookie configuration, database backups, and careful validation of incoming requests.
+Production deployments should enforce server-side authentication and authorization for every protected administrative operation. Additional safeguards include suitable rate limiting, strong secrets, HTTPS, secure cookie settings, database backups, and validation of incoming requests.
 
 ---
 
 ## SEO and Metadata
 
-SEO-oriented implementation supports the website's service pages and dynamic routes.
+The application supports SEO-oriented implementation for service pages and dynamic routes.
 
 Capabilities include, where configured:
 
@@ -409,17 +404,17 @@ Capabilities include, where configured:
 * Canonical URL support.
 * Open Graph metadata.
 * Structured data for supported page types.
-* Metadata generation for dynamic pages.
+* Metadata generation for dynamic routes.
 * Database-driven service and location content.
-* Not-found handling for invalid dynamic routes.
+* Not-found handling for invalid routes.
 
-These capabilities provide a foundation for improving search engine discoverability and the presentation of pages in search results and social previews.
+These features provide a foundation for improving search engine discoverability and the presentation of pages in search results and social previews.
 
 ---
 
 ## Media Management
 
-Cloudinary is integrated for hosted media and image management.
+Cloudinary is integrated for hosted image and media management.
 
 Supported media workflows can include:
 
@@ -428,11 +423,11 @@ Supported media workflows can include:
 * Project imagery.
 * Other CMS-managed visual assets.
 
-Media URLs can be stored with the corresponding content records and rendered by the public website, separating media hosting from the application's deployment environment.
+Media URLs can be associated with content records and rendered by the public website, separating media hosting from the application deployment environment.
 
 ---
 
-## Database and Data Flow
+## Database Design and Data Flow
 
 MySQL serves as the persistent data layer, while Prisma ORM provides structured and typed database access.
 
@@ -443,10 +438,10 @@ The database supports core application entities such as services, portfolio proj
 1. A visitor or administrator interacts with the application.
 2. A server component or API route handler processes the request.
 3. The application validates input and applies relevant business rules.
-4. Prisma retrieves or updates the relevant MySQL records.
-5. The application returns a response or renders the updated content.
+4. Prisma retrieves or updates the corresponding MySQL records.
+5. The application returns a response or renders updated content.
 
-This approach separates presentation, application logic, and persistence while maintaining a unified Next.js codebase.
+This approach separates presentation, application logic, and persistence while keeping them within a unified Next.js codebase.
 
 ---
 
@@ -484,22 +479,22 @@ it-agency-website/
 
 | Directory            | Responsibility                                 |
 | -------------------- | ---------------------------------------------- |
-| `src/app/(website)/` | Public website pages                           |
+| `src/app/(website)/` | Public-facing pages                            |
 | `src/app/admin/`     | Administrative dashboard                       |
 | `src/app/api/`       | Backend API route handlers                     |
 | `src/components/`    | Reusable UI components                         |
 | `src/emails/`        | Transactional email templates, where organized |
-| `src/lib/`           | Shared utilities, database client, and helpers |
+| `src/lib/`           | Shared utilities and database client           |
 | `prisma/`            | Database schema and migrations, where present  |
 | `public/`            | Static assets                                  |
 
 ---
 
-## Environment Configuration
+## Environment Variables
 
 Create a `.env` file in the project root and configure the variables required by the application.
 
-### Example
+### Example Configuration
 
 ```env
 DATABASE_URL="mysql://USER:PASSWORD@HOST:PORT/DATABASE"
@@ -516,17 +511,17 @@ CLOUDINARY_API_KEY="your-cloudinary-api-key"
 CLOUDINARY_API_SECRET="your-cloudinary-api-secret"
 ```
 
-Configure only the environment variables used by the current codebase. The database URL must point to the intended MySQL database, and external-service credentials must be valid for the target environment.
+Configure only the variables required by the current codebase. Use valid credentials for each external service and point `DATABASE_URL` to the intended MySQL database.
 
 **Never commit `.env` files, API keys, database credentials, or authentication secrets to GitHub.**
 
 ---
 
-## Getting Started
+## Installation and Setup
 
 ### Prerequisites
 
-* Node.js compatible with the version required by the project.
+* Node.js compatible with the project's Next.js version.
 * npm.
 * A MySQL database.
 * Credentials for the external services used by the application.
@@ -546,7 +541,7 @@ npm install
 
 ### 3. Configure Environment Variables
 
-Create a `.env` file in the project root and add the required database, authentication, email, and media configuration.
+Create a `.env` file in the project root and configure the required database, authentication, email, and media credentials.
 
 ### 4. Generate the Prisma Client
 
@@ -554,7 +549,7 @@ Create a `.env` file in the project root and add the required database, authenti
 npx prisma generate
 ```
 
-Ensure the database schema is synchronized with the intended database before running the application. Use the project's existing migration workflow where available. For a new development database, follow the setup process defined by the repository.
+Ensure the database schema is synchronized with the intended database. Follow the repository's existing migration workflow where available.
 
 ### 5. Start the Development Server
 
@@ -566,44 +561,44 @@ Open http://localhost:3000 in your browser.
 
 ---
 
-## Production Build
+## Running a Production Build
 
-Before deployment, validate the application with a production build:
+Validate the project with a production build:
 
 ```bash
 npm run build
 ```
 
-To run the production server in a suitable Node.js environment:
+To start the production server in a suitable Node.js environment:
 
 ```bash
 npm run start
 ```
 
-The production environment must have all required environment variables, working database connectivity, and valid external-service credentials.
+The production environment must have the required environment variables, database connectivity, and valid external-service credentials configured.
 
-Recommended deployment checks:
+### Deployment Checklist
 
-* Confirm that the production database is configured correctly.
-* Apply schema changes using the appropriate production migration workflow.
+* Configure the production database and environment variables.
+* Apply schema changes using the appropriate migration workflow.
 * Verify authentication and administrative authorization.
 * Test email OTP verification and enquiry submission end to end.
 * Confirm company and customer email delivery.
-* Test image uploads and media URLs.
+* Test media uploads and image URLs.
 * Validate important public pages on mobile and desktop.
 * Configure HTTPS, backups, and production monitoring.
 
 ---
 
-## Future Improvements
+## Future Enhancements
 
-Potential areas for continued development include:
+Potential areas for continued improvement include:
 
 * Comprehensive automated tests for API endpoints and enquiry workflows.
 * Enhanced API rate limiting and abuse prevention.
-* Further accessibility and reduced-motion improvements.
+* Further accessibility and reduced-motion refinements.
 * Image optimization and performance monitoring.
-* Improved mobile navigation for administrative screens.
+* Improved mobile usability for administrative screens.
 * More detailed lead analytics and reporting.
 * Expanded SEO and structured-data validation.
 * Additional operational monitoring and error reporting.
@@ -617,5 +612,7 @@ B.Tech — Electronics and Communication Engineering
 UIET Jalandhar
 
 **Project:** Soclthry — Full-Stack IT Agency Website & CMS
-**Engagement:** Freelance Client Project
-**Repository:** [MAHAK-BHARGAVA/it-agency-website](https://github.com/MAHAK-BHARGAVA/it-agency-website)
+**Engagement:** Completed Freelance Client Project
+**Role:** Full-Stack Developer
+
+[GitHub Repository](https://github.com/MAHAK-BHARGAVA/it-agency-website)
