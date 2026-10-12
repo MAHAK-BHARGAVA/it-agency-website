@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
 import { ArrowUpRight, Check, Loader2 } from "lucide-react";
 import PhoneInput from "@/components/ui/PhoneInput";
 
@@ -36,233 +37,146 @@ type FormValues = {
   message: string;
 };
 
-export function ContactForm({
-  services,
-}: {
-  services: Service[];
-}) {
+export function ContactForm({ services }: { services: Service[] }) {
   const [step, setStep] = useState<Step>("form");
+  const [status, setStatus] = useState<Status>("idle");
+  const [formValues, setFormValues] = useState<FormValues | null>(null);
+  const [verificationId, setVerificationId] = useState("");
+  const [emailOtp, setEmailOtp] = useState("");
+  const [resendSeconds, setResendSeconds] = useState(0);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [countryCode, setCountryCode] = useState("+91");
+  const [phone, setPhone] = useState("");
 
-  const [status, setStatus] =
-    useState<Status>("idle");
-
-  const [formValues, setFormValues] =
-    useState<FormValues | null>(null);
-
-  const [verificationId, setVerificationId] =
-    useState("");
-
-  const [emailOtp, setEmailOtp] =
-    useState("");
-
-  const [resendSeconds, setResendSeconds] =
-    useState(0);
-
-  const [errorMessage, setErrorMessage] =
-    useState("");
-
-  /* =====================================================
-     PHONE COUNTRY CODE
-  ===================================================== */
-
-  const [countryCode, setCountryCode] =
-    useState("+91");
-
-  const [phone, setPhone] =
-    useState("");
-
-  /* ================= RESEND TIMER ================= */
+  const isBusy =
+    status === "sendingOtp" ||
+    status === "verifyingEmail" ||
+    status === "submitting";
 
   useEffect(() => {
     if (resendSeconds <= 0) return;
 
-    const timer = setInterval(() => {
-      setResendSeconds((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-
-        return prev - 1;
-      });
+    const timer = window.setTimeout(() => {
+      setResendSeconds((previous) => Math.max(0, previous - 1));
     }, 1000);
 
-    return () => clearInterval(timer);
+    return () => window.clearTimeout(timer);
   }, [resendSeconds]);
-
-  /* =====================================================
-     FULL INTERNATIONAL PHONE
-  ===================================================== */
 
   function getFullPhoneNumber(
     phoneNumber: string = phone,
     dialCode: string = countryCode,
   ) {
-    const cleanedPhone =
-      phoneNumber.replace(/\D/g, "");
-
+    const cleanedPhone = phoneNumber.replace(/\D/g, "");
     return `${dialCode}${cleanedPhone}`;
   }
 
-  /* ================= SEND EMAIL OTP ================= */
+  async function readResponse(response: Response) {
+    const result = await response.json().catch(() => null);
+
+    if (!response.ok || !result?.success) {
+      throw new Error(
+        result?.message ||
+          result?.error ||
+          "Something went wrong. Please try again.",
+      );
+    }
+
+    return result;
+  }
 
   async function sendOtp(values: FormValues) {
     setStatus("sendingOtp");
     setErrorMessage("");
 
     try {
-      const fullPhone = getFullPhoneNumber(
-        values.phone,
-        countryCode,
-      );
-
-      const res = await fetch("/api/otp/send", {
+      const response = await fetch("/api/otp/send", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: values.name,
           email: values.email,
-          phone: fullPhone,
+          phone: getFullPhoneNumber(values.phone),
           city: values.city,
-          serviceId: values.serviceId
-            ? Number(values.serviceId)
-            : null,
-          preferredStartTime:
-            values.preferredStartTime,
+          serviceId: values.serviceId ? Number(values.serviceId) : null,
+          preferredStartTime: values.preferredStartTime,
           message: values.message,
         }),
       });
 
-      const result = await res.json();
+      const result = await readResponse(response);
 
-      if (!res.ok || !result.success) {
-        throw new Error(
-          result.message ||
-            result.error ||
-            "Unable to send OTP.",
-        );
+      if (!result.verificationId) {
+        throw new Error("Verification session could not be created.");
       }
 
-      setVerificationId(
-        result.verificationId,
-      );
-
       setFormValues(values);
-
+      setVerificationId(result.verificationId);
       setEmailOtp("");
-
       setResendSeconds(60);
-
       setStep("emailOtp");
-
       setStatus("idle");
     } catch (error) {
-      console.error(
-        "OTP send error:",
-        error,
-      );
-
+      console.error("OTP send error:", error);
       setErrorMessage(
         error instanceof Error
           ? error.message
           : "Unable to send OTP. Please try again.",
       );
-
       setStatus("error");
     }
   }
 
-  /* ================= FORM SUBMIT ================= */
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-  async function handleSubmit(
-    e: React.FormEvent<HTMLFormElement>,
-  ) {
-    e.preventDefault();
+    if (isBusy) return;
 
-    if (status === "sendingOtp") {
-      return;
-    }
-
-    const form = e.currentTarget;
+    const form = event.currentTarget;
 
     const values: FormValues = {
       name: (
-        form.elements.namedItem(
-          "name",
-        ) as HTMLInputElement
+        form.elements.namedItem("name") as HTMLInputElement
       ).value.trim(),
-
       email: (
-        form.elements.namedItem(
-          "email",
-        ) as HTMLInputElement
+        form.elements.namedItem("email") as HTMLInputElement
       ).value.trim(),
-
       phone: phone.trim(),
-
       city: (
-        form.elements.namedItem(
-          "city",
-        ) as HTMLInputElement
+        form.elements.namedItem("city") as HTMLInputElement
       ).value.trim(),
-
       serviceId: (
-        form.elements.namedItem(
-          "serviceId",
-        ) as HTMLSelectElement
+        form.elements.namedItem("serviceId") as HTMLSelectElement
       ).value,
-
       preferredStartTime: (
-        form.elements.namedItem(
-          "preferredStartTime",
-        ) as HTMLSelectElement
+        form.elements.namedItem("preferredStartTime") as HTMLSelectElement
       ).value,
-
       message: (
-        form.elements.namedItem(
-          "message",
-        ) as HTMLTextAreaElement
+        form.elements.namedItem("message") as HTMLTextAreaElement
       ).value.trim(),
     };
 
-    if (
-      !phone ||
-      phone.replace(/\D/g, "").length < 6
-    ) {
-      setErrorMessage(
-        "Please enter a valid phone number.",
-      );
-
+    if (!values.phone || values.phone.replace(/\D/g, "").length < 6) {
+      setErrorMessage("Please enter a valid phone number.");
       setStatus("error");
-
       return;
     }
 
     await sendOtp(values);
   }
 
-  /* ================= VERIFY EMAIL OTP ================= */
-
   async function verifyEmailOtp() {
     if (!verificationId || !formValues) {
       setErrorMessage(
-        "Verification session expired. Please request a new OTP.",
+        "Your verification session has expired. Please request a new OTP.",
       );
-
       setStatus("error");
-
       return;
     }
 
-    if (emailOtp.length !== 6) {
-      setErrorMessage(
-        "Please enter the 6-digit email OTP.",
-      );
-
+    if (!/^\d{6}$/.test(emailOtp)) {
+      setErrorMessage("Please enter the 6-digit email OTP.");
       setStatus("error");
-
       return;
     }
 
@@ -270,217 +184,150 @@ export function ContactForm({
     setErrorMessage("");
 
     try {
-      const res = await fetch(
-        "/api/otp/verify-email",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            verificationId,
-            email: formValues.email,
-            emailOtp,
-          }),
-        },
-      );
+      const response = await fetch("/api/otp/verify-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          verificationId,
+          email: formValues.email,
+          emailOtp,
+        }),
+      });
 
-      const result = await res.json();
-
-      if (!res.ok || !result.success) {
-        throw new Error(
-          result.message ||
-            result.error ||
-            "Invalid email OTP.",
-        );
-      }
-
-      /* Email verified successfully.
-         Now create the actual lead. */
-
+      await readResponse(response);
       await submitContact();
     } catch (error) {
-      console.error(
-        "Email OTP verification error:",
-        error,
-      );
-
+      console.error("Email OTP verification error:", error);
       setErrorMessage(
         error instanceof Error
           ? error.message
           : "Email verification failed. Please try again.",
       );
-
       setStatus("error");
     }
   }
 
-  /* ================= FINAL CONTACT SUBMIT ================= */
-
   async function submitContact() {
     if (!verificationId || !formValues) {
-      throw new Error(
-        "Verification session is missing.",
-      );
+      throw new Error("Verification session is missing.");
     }
 
     setStatus("submitting");
     setErrorMessage("");
 
     try {
-      const fullPhone =
-        getFullPhoneNumber(
-          formValues.phone,
-          countryCode,
-        );
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          verificationId,
+          name: formValues.name,
+          email: formValues.email,
+          phone: getFullPhoneNumber(formValues.phone),
+          city: formValues.city,
+          serviceId: formValues.serviceId
+            ? Number(formValues.serviceId)
+            : null,
+          preferredStartTime: formValues.preferredStartTime,
+          message: formValues.message,
+        }),
+      });
 
-      const res = await fetch(
-        "/api/contact",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-          body: JSON.stringify({
-            verificationId,
-
-            name: formValues.name,
-
-            email: formValues.email,
-
-            phone: fullPhone,
-
-            city: formValues.city,
-
-            serviceId: formValues.serviceId
-              ? Number(formValues.serviceId)
-              : null,
-
-            preferredStartTime:
-              formValues.preferredStartTime,
-
-            message: formValues.message,
-          }),
-        },
-      );
-
-      const result = await res.json();
-
-      if (!res.ok || !result.success) {
-        throw new Error(
-          result.error ||
-            "Unable to submit enquiry.",
-        );
-      }
+      await readResponse(response);
 
       setStatus("sent");
-
       setStep("form");
-
       setVerificationId("");
-
       setFormValues(null);
-
       setEmailOtp("");
-
       setResendSeconds(0);
-
       setPhone("");
-
       setCountryCode("+91");
     } catch (error) {
-      console.error(
-        "Contact submission error:",
-        error,
-      );
-
+      console.error("Contact submission error:", error);
       setErrorMessage(
         error instanceof Error
           ? error.message
-          : "Unable to submit enquiry.",
+          : "Unable to submit your enquiry. Please try again.",
       );
-
       setStatus("error");
     }
   }
 
-  /* ================= RESEND OTP ================= */
-
   async function resendOtp() {
-    if (
-      !formValues ||
-      resendSeconds > 0
-    ) {
-      return;
-    }
-
+    if (!formValues || resendSeconds > 0 || isBusy) return;
     await sendOtp(formValues);
   }
 
-  /* ================= SUCCESS ================= */
+  function returnToForm() {
+    setStep("form");
+    setStatus("idle");
+    setErrorMessage("");
+    setEmailOtp("");
+    setResendSeconds(0);
+    setVerificationId("");
+  }
 
   if (status === "sent") {
     return (
-      <div className="flex min-h-[520px] flex-col items-center justify-center text-center">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full bg-lime-400">
-          <Check
-            size={34}
-            strokeWidth={2.5}
-          />
+      <div
+        role="status"
+        className="flex min-h-[380px] flex-col items-center justify-center px-2 py-12 text-center sm:min-h-[460px]"
+      >
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-lime-400 sm:h-20 sm:w-20">
+          <Check size={32} strokeWidth={2.5} />
         </div>
 
-        <p className="mt-8 text-[10px] font-black uppercase tracking-[0.2em] text-black/30">
+        <p className="mt-7 text-[10px] font-black uppercase tracking-[0.2em] text-black/40">
           Message sent
         </p>
 
-        <h3 className="mt-4 text-4xl font-black tracking-[-0.055em]">
+        <h3 className="mt-4 text-3xl font-black tracking-[-0.055em] sm:text-4xl">
           We&apos;ll be in touch.
         </h3>
 
-        <p className="mt-5 max-w-md text-sm leading-7 text-black/45">
-          Thanks for reaching out. Your
-          enquiry has been received by our
-          team.
+        <p className="mt-4 max-w-md text-sm leading-7 text-black/55">
+          Thanks for reaching out. Your enquiry has been received by our team.
         </p>
 
         <button
           type="button"
           onClick={() => {
             setStatus("idle");
+            setErrorMessage("");
             setStep("form");
           }}
-          className="mt-9 rounded-full border border-black/10 px-6 py-3 text-xs font-black uppercase tracking-[0.15em] transition hover:bg-black hover:text-white"
+          className="mt-8 rounded-full border border-black/15 px-6 py-3 text-xs font-black uppercase tracking-[0.12em] transition hover:bg-black hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500 focus-visible:ring-offset-2"
         >
-          Send another
+          Send another enquiry
         </button>
       </div>
     );
   }
 
-  /* ================= EMAIL OTP SCREEN ================= */
-
   if (step === "emailOtp") {
     return (
-      <div className="min-h-[520px]">
-        <div className="border-b border-black/10 py-7">
-          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-black/30">
-            Verification
+      <section
+        aria-labelledby="verify-email-heading"
+        className="min-h-[380px] sm:min-h-[460px]"
+      >
+        <div className="border-b border-black/10 py-6 sm:py-7">
+          <p className="text-[10px] font-black uppercase tracking-[0.18em] text-black/40">
+            Verification · 02
           </p>
 
-          <h3 className="mt-3 text-3xl font-black tracking-[-0.045em]">
+          <h3
+            id="verify-email-heading"
+            className="mt-3 text-2xl font-black tracking-[-0.045em] sm:text-3xl"
+          >
             Verify your email
           </h3>
 
-          <p className="mt-4 max-w-lg text-sm leading-7 text-black/45">
-            We&apos;ve sent a 6-digit
-            verification code to{" "}
-            {formValues?.email}.
+          <p className="mt-4 break-words text-sm leading-7 text-black/55">
+            We&apos;ve sent a 6-digit verification code to{" "}
+            <span className="font-semibold text-black">{formValues?.email}</span>.
           </p>
         </div>
-
-        {/* OTP INPUT */}
 
         <div className="border-b border-black/10 py-7">
           <label
@@ -492,46 +339,40 @@ export function ContactForm({
 
           <input
             id="emailOtp"
-            value={emailOtp}
-            onChange={(e) => {
-              const value =
-                e.target.value
-                  .replace(/\D/g, "")
-                  .slice(0, 6);
-
-              setEmailOtp(value);
-            }}
+            name="emailOtp"
+            type="text"
             inputMode="numeric"
-            maxLength={6}
+            pattern="[0-9]{6}"
             autoComplete="one-time-code"
+            maxLength={6}
+            required
+            value={emailOtp}
+            onChange={(event) => {
+              setEmailOtp(
+                event.target.value.replace(/\D/g, "").slice(0, 6),
+              );
+              if (status === "error") {
+                setStatus("idle");
+                setErrorMessage("");
+              }
+            }}
             placeholder="Enter 6-digit OTP"
-            className="mt-4 w-full bg-transparent text-2xl font-bold tracking-[0.3em] outline-none placeholder:text-sm placeholder:tracking-normal placeholder:text-black/20"
+            aria-describedby={errorMessage ? "otp-error" : undefined}
+            className="mt-4 w-full min-w-0 rounded-xl border border-black/10 bg-white/60 px-4 py-4 text-xl font-bold tracking-[0.25em] outline-none transition placeholder:text-sm placeholder:font-normal placeholder:tracking-normal placeholder:text-black/30 focus:border-lime-500 focus:ring-2 focus:ring-lime-400/30 sm:text-2xl"
           />
         </div>
 
-        {/* ERROR */}
-
         {status === "error" && (
-          <div className="mt-6 rounded-2xl bg-red-50 px-5 py-4 text-sm text-red-600">
-            {errorMessage ||
-              "Something went wrong. Please try again."}
-          </div>
+          <ErrorMessage id="otp-error" message={errorMessage} />
         )}
 
-        {/* ACTIONS */}
-
-        <div className="flex flex-col gap-5 pt-8 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-5 pt-7 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col items-start gap-3">
             <button
               type="button"
               onClick={resendOtp}
-              disabled={
-                resendSeconds > 0 ||
-                status === "sendingOtp" ||
-                status === "verifyingEmail" ||
-                status === "submitting"
-              }
-              className="text-left text-xs font-black uppercase tracking-[0.12em] disabled:cursor-not-allowed disabled:text-black/20"
+              disabled={resendSeconds > 0 || isBusy}
+              className="text-xs font-black uppercase tracking-[0.1em] transition hover:text-black/60 disabled:cursor-not-allowed disabled:text-black/30"
             >
               {status === "sendingOtp"
                 ? "Sending OTP..."
@@ -542,14 +383,9 @@ export function ContactForm({
 
             <button
               type="button"
-              onClick={() => {
-                setStep("form");
-                setStatus("idle");
-                setErrorMessage("");
-                setEmailOtp("");
-                setResendSeconds(0);
-              }}
-              className="text-left text-xs font-medium text-black/40 hover:text-black"
+              onClick={returnToForm}
+              disabled={isBusy}
+              className="text-sm text-black/50 transition hover:text-black disabled:opacity-50"
             >
               ← Edit details
             </button>
@@ -558,61 +394,41 @@ export function ContactForm({
           <button
             type="button"
             onClick={verifyEmailOtp}
-            disabled={
-              status === "verifyingEmail" ||
-              status === "submitting"
-            }
-            className="group flex items-center justify-center gap-4 rounded-full bg-black px-6 py-3.5 text-sm font-black text-white transition-all duration-300 hover:bg-lime-400 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={isBusy || emailOtp.length !== 6}
+            className="group flex w-full items-center justify-center gap-3 rounded-full bg-black px-5 py-3.5 text-sm font-black text-white transition-all duration-300 hover:bg-lime-400 hover:text-black disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:min-w-[180px]"
           >
-            {status === "verifyingEmail" ||
-            status === "submitting" ? (
+            {isBusy ? (
               <>
-                <Loader2
-                  size={16}
-                  className="animate-spin"
-                />
-
-                {status ===
-                "verifyingEmail"
-                  ? "Verifying Email"
-                  : "Sending"}
+                <Loader2 size={16} className="animate-spin" />
+                {status === "verifyingEmail" ? "Verifying..." : "Submitting..."}
               </>
             ) : (
               <>
-                Verify Email
-
+                Verify email
                 <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-black/10">
                   <ArrowUpRight
                     size={14}
-                    className="transition-transform duration-300 group-hover:rotate-45"
+                    className="transition-transform group-hover:rotate-45"
                   />
                 </span>
               </>
             )}
           </button>
         </div>
-      </div>
+      </section>
     );
   }
 
-  /* ================= CONTACT FORM ================= */
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-0"
-    >
-      {/* NAME */}
-
+    <form onSubmit={handleSubmit} className="min-w-0">
       <FormField
         number="01"
         label="Your name"
         name="name"
         placeholder="What should we call you?"
+        autoComplete="name"
         required
       />
-
-      {/* EMAIL */}
 
       <FormField
         number="02"
@@ -620,36 +436,35 @@ export function ContactForm({
         name="email"
         type="email"
         placeholder="Where can we reach you?"
+        autoComplete="email"
         required
       />
 
       {/* PHONE */}
-
-      <div className="group border-b border-black/10 py-7">
-        <div className="flex gap-5">
-          <span className="pt-1 text-[9px] font-black tracking-[0.15em] text-black/20">
+      <div className="border-b border-black/10 py-6 sm:py-7">
+        <div className="flex gap-3 sm:gap-5">
+          <span
+            aria-hidden="true"
+            className="pt-1 text-[9px] font-black tracking-[0.15em] text-black/35"
+          >
             03
           </span>
 
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <label
               htmlFor="phone"
-              className="block text-xs font-black uppercase tracking-[0.14em]"
+              className="block text-xs font-black uppercase tracking-[0.12em] sm:tracking-[0.14em]"
             >
               Phone number
             </label>
 
-            <div className="mt-4">
+            <div className="mt-4 min-w-0">
               <PhoneInput
                 value={phone}
                 countryCode={countryCode}
                 onPhoneChange={setPhone}
-                onCountryChange={(
-                  dialCode,
-                ) => {
-                  setCountryCode(
-                    dialCode,
-                  );
+                onCountryChange={(dialCode) => {
+                  setCountryCode(dialCode);
                   setPhone("");
                 }}
               />
@@ -658,27 +473,28 @@ export function ContactForm({
         </div>
       </div>
 
-      {/* CITY */}
-
       <FormField
         number="04"
         label="City"
         name="city"
         placeholder="Where are you based?"
+        autoComplete="address-level2"
       />
 
       {/* SERVICE */}
-
-      <div className="group border-b border-black/10 py-7">
-        <div className="flex gap-5">
-          <span className="pt-1 text-[9px] font-black tracking-[0.15em] text-black/20">
+      <div className="border-b border-black/10 py-6 sm:py-7">
+        <div className="flex gap-3 sm:gap-5">
+          <span
+            aria-hidden="true"
+            className="pt-1 text-[9px] font-black tracking-[0.15em] text-black/35"
+          >
             05
           </span>
 
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <label
               htmlFor="serviceId"
-              className="block text-xs font-black uppercase tracking-[0.14em]"
+              className="block text-xs font-black uppercase tracking-[0.12em] sm:tracking-[0.14em]"
             >
               What do you need?
             </label>
@@ -688,47 +504,42 @@ export function ContactForm({
                 id="serviceId"
                 name="serviceId"
                 defaultValue=""
-                className="w-full appearance-none bg-transparent pr-10 text-base font-medium text-black/50 outline-none transition focus:text-black"
+                className="w-full min-w-0 appearance-none rounded-lg border border-transparent bg-transparent py-2 pr-9 text-base font-medium outline-none transition focus:border-lime-500 focus:ring-2 focus:ring-lime-400/30"
               >
-                <option value="">
-                  Select a service
-                </option>
-
-                {services.map(
-                  (service) => (
-                    <option
-                      key={service.id}
-                      value={service.id}
-                    >
-                      {service.name}
-                    </option>
-                  ),
-                )}
+                <option value="">Select a service</option>
+                {services.map((service) => (
+                  <option key={service.id} value={service.id}>
+                    {service.name}
+                  </option>
+                ))}
               </select>
 
               <ArrowUpRight
+                aria-hidden="true"
                 size={15}
-                className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 rotate-45 text-black/30"
+                className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 rotate-45 text-black/40"
               />
             </div>
           </div>
         </div>
       </div>
 
-      {/* PREFERRED START TIME */}
-
-      <div className="group border-b border-black/10 py-7">
-        <div className="flex gap-5">
-          <span className="pt-1 text-[9px] font-black tracking-[0.15em] text-black/20">
+      {/* START TIME */}
+      <div className="border-b border-black/10 py-6 sm:py-7">
+        <div className="flex gap-3 sm:gap-5">
+          <span
+            aria-hidden="true"
+            className="pt-1 text-[9px] font-black tracking-[0.15em] text-black/35"
+          >
             06
           </span>
 
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <label
               htmlFor="preferredStartTime"
-              className="block text-xs font-black uppercase tracking-[0.14em]"
+              className="block text-xs font-black uppercase tracking-[0.12em] sm:tracking-[0.14em]"
             >
-              Preferred Start Time
+              Preferred start time
             </label>
 
             <div className="relative mt-4">
@@ -737,31 +548,22 @@ export function ContactForm({
                 name="preferredStartTime"
                 required
                 defaultValue=""
-                className="w-full appearance-none bg-transparent pr-10 text-base font-medium text-black/50 outline-none transition focus:text-black"
+                className="w-full min-w-0 appearance-none rounded-lg border border-transparent bg-transparent py-2 pr-9 text-base font-medium outline-none transition focus:border-lime-500 focus:ring-2 focus:ring-lime-400/30"
               >
-                <option
-                  value=""
-                  disabled
-                >
-                  Select preferred start
-                  time
+                <option value="" disabled>
+                  Select preferred start time
                 </option>
-
-                {startTimeOptions.map(
-                  (option) => (
-                    <option
-                      key={option.value}
-                      value={option.value}
-                    >
-                      {option.label}
-                    </option>
-                  ),
-                )}
+                {startTimeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
 
               <ArrowUpRight
+                aria-hidden="true"
                 size={15}
-                className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 rotate-45 text-black/30"
+                className="pointer-events-none absolute right-1 top-1/2 -translate-y-1/2 rotate-45 text-black/40"
               />
             </div>
           </div>
@@ -769,71 +571,63 @@ export function ContactForm({
       </div>
 
       {/* MESSAGE */}
-
-      <div className="group border-b border-black/10 py-7">
-        <div className="flex gap-5">
-          <span className="pt-1 text-[9px] font-black tracking-[0.15em] text-black/20">
+      <div className="border-b border-black/10 py-6 sm:py-7">
+        <div className="flex gap-3 sm:gap-5">
+          <span
+            aria-hidden="true"
+            className="pt-1 text-[9px] font-black tracking-[0.15em] text-black/35"
+          >
             07
           </span>
 
-          <div className="flex-1">
+          <div className="min-w-0 flex-1">
             <label
               htmlFor="message"
-              className="block text-xs font-black uppercase tracking-[0.14em]"
+              className="block text-xs font-black uppercase tracking-[0.12em] sm:tracking-[0.14em]"
             >
-              Tell us about your
-              project
+              Tell us about your project
             </label>
 
             <textarea
               id="message"
               name="message"
               required
+              minLength={10}
+              maxLength={5000}
               rows={4}
               placeholder="A few words about your idea, requirements or challenge..."
-              className="mt-4 w-full resize-none bg-transparent text-base leading-7 outline-none placeholder:text-black/20"
+              className="mt-4 w-full resize-y rounded-xl border border-transparent bg-transparent py-2 text-base leading-7 outline-none transition placeholder:text-black/30 focus:border-lime-500 focus:ring-2 focus:ring-lime-400/30"
             />
+
+            <p className="mt-1 text-xs leading-5 text-black/40">
+              Include your goals, requirements or any questions you have.
+            </p>
           </div>
         </div>
       </div>
 
-      {/* ERROR */}
-
       {status === "error" && (
-        <div className="mt-6 rounded-2xl bg-red-50 px-5 py-4 text-sm text-red-600">
-          {errorMessage ||
-            "Something went wrong. Please try again."}
-        </div>
+        <ErrorMessage id="form-error" message={errorMessage} />
       )}
 
-      {/* SUBMIT */}
-
-      <div className="flex flex-col gap-6 pt-8 sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-xs text-[10px] leading-5 text-black/30">
-          We&apos;ll only use your
-          details to respond to this
-          enquiry.
+      <div className="flex flex-col gap-5 pt-7 sm:gap-6 sm:pt-8 md:flex-row md:items-center md:justify-between">
+        <p className="max-w-xs text-xs leading-6 text-black/45">
+          We&apos;ll only use your details to respond to this enquiry.
         </p>
 
         <button
           type="submit"
-          disabled={
-            status === "sendingOtp"
-          }
-          className="group flex items-center justify-center gap-4 rounded-full bg-black px-6 py-3.5 text-sm font-black text-white transition-all duration-300 hover:bg-lime-400 hover:text-black disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={isBusy}
+          className="group flex w-full items-center justify-center gap-3 rounded-full bg-black px-5 py-3.5 text-sm font-black text-white transition-all duration-300 hover:bg-lime-400 hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lime-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:min-w-[190px]"
         >
           {status === "sendingOtp" ? (
             <>
-              <Loader2
-                size={16}
-                className="animate-spin"
-              />
-              Sending OTP
+              <Loader2 size={16} className="animate-spin" />
+              Sending OTP...
             </>
           ) : (
             <>
               Send enquiry
-
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/10 transition group-hover:bg-black/10">
                 <ArrowUpRight
                   size={14}
@@ -848,9 +642,23 @@ export function ContactForm({
   );
 }
 
-/* =====================================================
-   FORM FIELD
-===================================================== */
+function ErrorMessage({
+  id,
+  message,
+}: {
+  id: string;
+  message: string;
+}) {
+  return (
+    <div
+      id={id}
+      role="alert"
+      className="mt-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3.5 text-sm leading-6 text-red-700 sm:px-5"
+    >
+      {message || "Something went wrong. Please try again."}
+    </div>
+  );
+}
 
 function FormField({
   number,
@@ -858,6 +666,7 @@ function FormField({
   name,
   placeholder,
   type = "text",
+  autoComplete,
   required = false,
 }: {
   number: string;
@@ -865,19 +674,23 @@ function FormField({
   name: string;
   placeholder: string;
   type?: string;
+  autoComplete?: string;
   required?: boolean;
 }) {
   return (
-    <div className="group border-b border-black/10 py-7">
-      <div className="flex gap-5">
-        <span className="pt-1 text-[9px] font-black tracking-[0.15em] text-black/20">
+    <div className="border-b border-black/10 py-6 sm:py-7">
+      <div className="flex gap-3 sm:gap-5">
+        <span
+          aria-hidden="true"
+          className="pt-1 text-[9px] font-black tracking-[0.15em] text-black/35"
+        >
           {number}
         </span>
 
-        <div className="flex-1">
+        <div className="min-w-0 flex-1">
           <label
             htmlFor={name}
-            className="block text-xs font-black uppercase tracking-[0.14em]"
+            className="block text-xs font-black uppercase tracking-[0.12em] sm:tracking-[0.14em]"
           >
             {label}
           </label>
@@ -886,9 +699,10 @@ function FormField({
             id={name}
             name={name}
             type={type}
+            autoComplete={autoComplete}
             required={required}
             placeholder={placeholder}
-            className="mt-4 w-full bg-transparent text-base outline-none placeholder:text-black/20"
+            className="mt-4 w-full min-w-0 rounded-xl border border-transparent bg-transparent py-2 text-base outline-none transition placeholder:text-black/30 focus:border-lime-500 focus:ring-2 focus:ring-lime-400/30"
           />
         </div>
       </div>
