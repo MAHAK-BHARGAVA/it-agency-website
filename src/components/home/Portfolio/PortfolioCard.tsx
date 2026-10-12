@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -27,7 +28,7 @@ export default function PortfolioCard({ project, index }: Props) {
     <motion.article
       initial={
         reduceMotion
-          ? undefined
+          ? false
           : {
               opacity: 0,
               y: 32,
@@ -43,19 +44,19 @@ export default function PortfolioCard({ project, index }: Props) {
       }
       viewport={{
         once: true,
-        margin: "-80px",
+        margin: "-40px",
       }}
       transition={{
         duration: 0.6,
         delay: Math.min(index, 3) * 0.08,
         ease: [0.22, 1, 0.36, 1],
       }}
-      className="h-full"
+      className="h-full min-w-0"
     >
       <Link
         href={`/portfolio/${project.slug}`}
         aria-label={`View ${project.projectName} case study`}
-        className="group relative flex h-full flex-col overflow-hidden rounded-[32px] bg-[#121212] ring-1 ring-white/[0.06] transition-all duration-500 hover:-translate-y-2 hover:bg-[#161616] hover:shadow-[0_28px_80px_rgba(0,0,0,0.45)]"
+        className="group relative flex h-full min-w-0 flex-col overflow-hidden rounded-2xl bg-[#121212] ring-1 ring-white/[0.06] transition-all duration-500 hover:-translate-y-1 hover:bg-[#161616] hover:shadow-[0_28px_80px_rgba(0,0,0,0.45)] sm:rounded-[32px] sm:hover:-translate-y-2"
       >
         {/* Lime hover line */}
         <span
@@ -63,7 +64,7 @@ export default function PortfolioCard({ project, index }: Props) {
           className="absolute left-0 top-0 z-20 h-[3px] w-0 bg-lime-400 transition-all duration-500 ease-out group-hover:w-full"
         />
 
-        {/* Image frame */}
+        {/* Project image */}
         <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#ececec]">
           {hasThumbnail ? (
             <Image
@@ -74,11 +75,11 @@ export default function PortfolioCard({ project, index }: Props) {
               priority={index < 2}
               sizes="(max-width: 767px) 100vw, (max-width: 1279px) 50vw, 640px"
               onError={() => setImageFailed(true)}
-              className="object-contain transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+              className="object-contain transition-transform duration-700 ease-out sm:group-hover:scale-[1.03]"
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#1a1a1a] to-black">
-              <span className="font-mono text-xs uppercase tracking-widest text-white/30">
+              <span className="px-3 text-center font-mono text-[10px] uppercase tracking-widest text-white/40 sm:text-xs">
                 Preview coming soon
               </span>
             </div>
@@ -86,33 +87,34 @@ export default function PortfolioCard({ project, index }: Props) {
 
           <div
             aria-hidden="true"
-            className="absolute inset-0 bg-black/0 transition-colors duration-500 group-hover:bg-black/[0.04]"
+            className="pointer-events-none absolute inset-0 bg-black/0 transition-colors duration-500 sm:group-hover:bg-black/[0.04]"
           />
 
-          <span className="absolute bottom-5 left-5 z-10 flex translate-y-3 items-center gap-2 rounded-full bg-lime-400 px-4 py-2 text-xs font-bold uppercase tracking-widest text-black opacity-0 transition-all duration-[400ms] ease-out group-hover:translate-y-0 group-hover:opacity-100">
+          {/* Visible on touch devices; hover treatment on desktop */}
+          <span className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-lime-400 px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-black sm:bottom-5 sm:left-5 sm:gap-2 sm:px-4 sm:text-xs sm:tracking-widest sm:opacity-0 sm:transition-all sm:duration-300 sm:group-hover:translate-y-0 sm:group-hover:opacity-100">
             View case study
             <ArrowUpRight size={14} />
           </span>
         </div>
 
-        {/* Card content */}
-        <div className="flex min-h-[240px] flex-1 items-center justify-between gap-6 p-6 sm:p-8">
-          <div className="min-w-0">
+        {/* Project details */}
+        <div className="flex min-w-0 flex-1 items-center justify-between gap-3 p-4 sm:gap-5 sm:p-6 lg:p-8">
+          <div className="min-w-0 flex-1">
             <span className="font-mono text-xs text-gray-500">
               {String(index + 1).padStart(2, "0")}
             </span>
 
-            <h3 className="mt-2 text-2xl font-black leading-tight text-white sm:text-3xl">
+            <h3 className="mt-2 break-words text-xl font-black leading-tight text-white sm:text-2xl lg:text-3xl">
               {project.projectName}
             </h3>
 
-            <p className="mt-4 line-clamp-2 leading-7 text-gray-400">
+            <p className="mt-3 line-clamp-3 text-sm leading-6 text-gray-400 sm:mt-4 sm:line-clamp-2 sm:text-base sm:leading-7">
               {summary}
             </p>
           </div>
 
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-lime-400 transition-transform duration-500 group-hover:rotate-45 sm:h-16 sm:w-16">
-            <ArrowUpRight className="text-black" />
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-lime-400 transition-transform duration-500 group-hover:rotate-45 sm:h-14 sm:w-14 lg:h-16 lg:w-16">
+            <ArrowUpRight className="h-5 w-5 text-black sm:h-6 sm:w-6" />
           </div>
         </div>
       </Link>

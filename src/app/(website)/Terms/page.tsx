@@ -18,7 +18,6 @@ const sections = [
           to be bound by these Terms & Conditions. If you do not agree with
           these terms, please do not use our website or services.
         </p>
-
         <p>
           These terms apply to all visitors, users, clients, and other
           individuals who access or use our services.
@@ -37,7 +36,6 @@ const sections = [
           development, software solutions, digital marketing, SEO, branding,
           AI automation, and related technology services.
         </p>
-
         <p>
           The exact scope, timeline, deliverables, and pricing of a project
           will depend on the agreement between Soclthry and the client.
@@ -55,17 +53,16 @@ const sections = [
           You agree to use this website only for lawful purposes and in a way
           that does not infringe upon the rights of others.
         </p>
-
-        <ul className="mt-6 space-y-4">
+        <ul className="mt-5 space-y-4 sm:mt-6">
           {[
             "Do not attempt to gain unauthorized access to our systems.",
             "Do not use the website for fraudulent or unlawful activities.",
             "Do not knowingly introduce malicious software or harmful code.",
             "Do not interfere with the security or operation of the website.",
           ].map((item) => (
-            <li key={item} className="flex gap-3">
-              <Check className="mt-1 h-4 w-4 shrink-0 text-[#B7F000]" />
-              <span>{item}</span>
+            <li key={item} className="flex items-start gap-3">
+              <Check className="mt-1 h-4 w-4 shrink-0 text-[#91C000]" />
+              <span className="min-w-0">{item}</span>
             </li>
           ))}
         </ul>
@@ -83,7 +80,6 @@ const sections = [
           graphics, text, code, and other materials available on this website
           are owned by or licensed to Soclthry.
         </p>
-
         <p>
           You may not reproduce, distribute, modify, publish, or commercially
           exploit our materials without prior written permission.
@@ -102,7 +98,6 @@ const sections = [
           materials, credentials, approvals, and feedback required for their
           projects.
         </p>
-
         <p>
           Delays caused by missing information, delayed approvals, or
           incomplete client requirements may affect project timelines.
@@ -120,7 +115,6 @@ const sections = [
           Project pricing, payment schedules, milestones, and deliverables
           will be communicated and agreed upon before or during the engagement.
         </p>
-
         <p>
           Additional work outside the agreed scope may require additional
           charges and a separate agreement.
@@ -140,7 +134,6 @@ const sections = [
           guarantee that the website or services will always be uninterrupted,
           error-free, or completely secure.
         </p>
-
         <p>
           To the extent permitted by applicable law, Soclthry will not be
           responsible for indirect, incidental, or consequential losses arising
@@ -160,7 +153,6 @@ const sections = [
           changes to our services, business practices, or applicable
           requirements.
         </p>
-
         <p>
           Updated terms will be published on this page with a revised
           effective date.
@@ -178,8 +170,7 @@ const sections = [
           If you have questions about these Terms & Conditions, you can contact
           our team.
         </p>
-
-        <div className="mt-8">
+        <div className="mt-6 sm:mt-8">
           <Link
             href="/contact"
             className="group inline-flex items-center gap-3 border-b border-[#B7F000] pb-2 text-sm font-bold text-white transition-colors hover:text-[#B7F000]"
@@ -195,14 +186,10 @@ const sections = [
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-[#F5F5F0] text-[#181A1B]">
+    <main className="min-h-screen overflow-hidden bg-[#F5F5F0] text-[#181A1B]">
 
-      {/* =========================================================
-          HERO
-      ========================================================= */}
-
+      {/* HERO */}
       <section className="relative overflow-hidden bg-[#111313] text-white">
-        {/* Decorative grid */}
         <div className="pointer-events-none absolute inset-0 opacity-[0.08]">
           <div
             className="absolute inset-0"
@@ -214,91 +201,90 @@ export default function TermsPage() {
           />
         </div>
 
-        {/* Lime glow */}
-        <div className="pointer-events-none absolute -right-32 top-20 h-96 w-96 rounded-full bg-[#B7F000]/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-24 top-24 h-64 w-64 rounded-full bg-[#B7F000]/10 blur-3xl sm:-right-32 sm:top-20 sm:h-96 sm:w-96" />
 
-        <div className="relative mx-auto max-w-[1400px] px-6 pb-24 pt-12 sm:px-10 lg:px-16 lg:pb-32 lg:pt-16">
-          
-          {/* Top label */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15">
+        <div className="relative mx-auto max-w-[1400px] px-4 pb-14 pt-8 sm:px-8 sm:pb-20 sm:pt-10 md:px-10 lg:px-16 lg:pb-32 lg:pt-16">
+
+          {/* TOP LABEL */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/15 sm:h-10 sm:w-10">
                 <FileText className="h-4 w-4 text-[#B7F000]" />
               </div>
-
-              <span className="text-xs font-bold uppercase tracking-[0.25em] text-white/50">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 sm:text-xs sm:tracking-[0.25em]">
                 Legal
               </span>
             </div>
 
-            <span className="hidden text-xs uppercase tracking-[0.2em] text-white/40 sm:block">
+            <span className="max-w-[150px] text-right text-[9px] uppercase leading-5 tracking-[0.12em] text-white/40 sm:max-w-none sm:text-xs sm:tracking-[0.2em]">
               Last updated · October 2026
             </span>
           </div>
 
-          {/* Hero content */}
-          <div className="mt-24 max-w-6xl lg:mt-32">
-            <p className="mb-6 text-sm font-medium uppercase tracking-[0.25em] text-[#B7F000]">
+          {/* HERO CONTENT */}
+          <div className="mt-16 max-w-6xl sm:mt-20 lg:mt-32">
+            <p className="mb-5 text-[10px] font-medium uppercase tracking-[0.2em] text-[#B7F000] sm:mb-6 sm:text-sm sm:tracking-[0.25em]">
               Terms & Conditions
             </p>
 
-            <h1 className="text-[clamp(4rem,11vw,10rem)] font-black leading-[0.82] tracking-[-0.07em]">
+            <h1 className="text-[clamp(3.3rem,12vw,10rem)] font-black leading-[0.86] tracking-[-0.075em] sm:leading-[0.82] sm:tracking-[-0.07em]">
               Terms
               <br />
               <span className="text-white/30">&amp;</span>{" "}
-              Conditions<span className="text-[#B7F000]">.</span>
+              <span className="break-words">Conditions</span>
+              <span className="text-[#B7F000]">.</span>
             </h1>
           </div>
 
-          {/* Hero bottom */}
-          <div className="mt-20 flex flex-col justify-between gap-8 border-t border-white/10 pt-8 sm:flex-row sm:items-end">
-            <p className="max-w-xl text-lg leading-8 text-white/55">
+          {/* HERO BOTTOM */}
+          <div className="mt-12 flex flex-col justify-between gap-6 border-t border-white/10 pt-6 sm:mt-16 sm:gap-8 sm:pt-8 md:flex-row md:items-end lg:mt-20">
+            <p className="max-w-xl text-base leading-7 text-white/55 sm:text-lg sm:leading-8">
               The rules, responsibilities, and guidelines that govern your use
               of the Soclthry website and services.
             </p>
 
-            <div className="flex items-center gap-3 text-sm text-white/40">
-              <ShieldCheck className="h-5 w-5 text-[#B7F000]" />
+            <div className="flex items-center gap-3 text-xs leading-5 text-white/40 sm:text-sm">
+              <ShieldCheck className="h-5 w-5 shrink-0 text-[#B7F000]" />
               <span>Clear. Transparent. Straightforward.</span>
             </div>
           </div>
+
         </div>
       </section>
 
-      {/* =========================================================
-          CONTENT
-      ========================================================= */}
+      {/* CONTENT */}
+      <section className="mx-auto max-w-[1400px] px-4 py-12 sm:px-8 sm:py-16 md:px-10 lg:px-16 lg:py-28">
+        <div className="grid min-w-0 gap-10 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-24">
 
-      <section className="mx-auto max-w-[1400px] px-6 py-20 sm:px-10 lg:px-16 lg:py-28">
-        <div className="grid gap-16 lg:grid-cols-[260px_1fr] lg:gap-24">
-
-          {/* Sidebar */}
-          <aside className="lg:sticky lg:top-10 lg:h-fit">
-            <p className="text-xs font-black uppercase tracking-[0.25em] text-[#777971]">
+          {/* SIDEBAR / MOBILE NAVIGATION */}
+          <aside className="min-w-0 lg:sticky lg:top-10 lg:h-fit">
+            <p className="text-[10px] font-black uppercase tracking-[0.2em] text-[#777971] sm:text-xs sm:tracking-[0.25em]">
               On this page
             </p>
 
-            <nav className="mt-6 space-y-3">
+            <nav
+              aria-label="Terms and Conditions sections"
+              className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3 lg:grid-cols-1"
+            >
               {sections.map((section) => (
                 <a
                   key={section.id}
                   href={`#${section.id}`}
-                  className="group flex items-center gap-3 text-sm text-[#777971] transition-colors hover:text-[#181A1B]"
+                  className="group flex min-w-0 items-start gap-3 rounded-xl border border-black/[0.06] bg-white/60 px-3 py-3 text-xs leading-5 text-[#777971] transition-colors hover:border-black/15 hover:text-[#181A1B] sm:text-sm lg:border-0 lg:bg-transparent lg:px-0 lg:py-1"
                 >
-                  <span className="font-mono text-[10px] text-[#B7F000]">
+                  <span className="shrink-0 font-mono text-[10px] text-[#769B00]">
                     {section.number}
                   </span>
-
-                  <span>{section.title}</span>
+                  <span className="min-w-0 break-words">{section.title}</span>
                 </a>
               ))}
             </nav>
           </aside>
 
-          {/* Main legal content */}
-          <div className="max-w-4xl">
-            <div className="mb-20 border-b border-black/10 pb-12">
-              <p className="max-w-3xl text-xl leading-9 text-[#555750] sm:text-2xl sm:leading-10">
+          {/* MAIN LEGAL CONTENT */}
+          <div className="min-w-0 max-w-4xl">
+            <div className="mb-12 border-b border-black/10 pb-8 sm:mb-16 sm:pb-12 lg:mb-20">
+              <p className="max-w-3xl text-lg leading-8 text-[#555750] sm:text-xl sm:leading-9 md:text-2xl md:leading-10">
                 These Terms & Conditions explain the conditions under which you
                 may access and use the Soclthry website and services. Please
                 read them carefully before using our services.
@@ -310,24 +296,24 @@ export default function TermsPage() {
                 <section
                   key={section.id}
                   id={section.id}
-                  className="scroll-mt-20 border-b border-black/10 py-12 first:pt-0 last:border-b-0"
+                  className="scroll-mt-24 border-b border-black/10 py-8 first:pt-0 last:border-b-0 sm:py-10 md:py-12"
                 >
-                  <div className="grid gap-8 md:grid-cols-[90px_1fr]">
-                    
-                    {/* Number */}
+                  <div className="grid min-w-0 gap-3 sm:gap-5 md:grid-cols-[60px_minmax(0,1fr)] md:gap-8">
+
+                    {/* NUMBER */}
                     <div>
-                      <span className="font-mono text-sm font-bold text-[#B7F000]">
+                      <span className="font-mono text-xs font-bold text-[#769B00] sm:text-sm">
                         {section.number}
                       </span>
                     </div>
 
-                    {/* Content */}
-                    <div>
-                      <h2 className="text-2xl font-black tracking-tight sm:text-3xl">
+                    {/* SECTION CONTENT */}
+                    <div className="min-w-0">
+                      <h2 className="break-words text-xl font-black leading-tight tracking-tight sm:text-2xl md:text-3xl">
                         {section.title}
                       </h2>
 
-                      <div className="mt-7 space-y-5 text-base leading-8 text-[#666861]">
+                      <div className="mt-5 space-y-4 break-words text-sm leading-7 text-[#666861] sm:mt-7 sm:space-y-5 sm:text-base sm:leading-8">
                         {section.content}
                       </div>
                     </div>
@@ -337,23 +323,22 @@ export default function TermsPage() {
               ))}
             </div>
           </div>
+
         </div>
       </section>
 
-      {/* =========================================================
-          CTA
-      ========================================================= */}
-
+      {/* CTA */}
       <section className="bg-[#B7F000]">
-        <div className="mx-auto max-w-[1400px] px-6 py-20 sm:px-10 lg:px-16 lg:py-28">
-          <div className="flex flex-col justify-between gap-12 lg:flex-row lg:items-end">
-            
+        <div className="mx-auto max-w-[1400px] px-4 py-14 sm:px-8 sm:py-20 md:px-10 lg:px-16 lg:py-28">
+
+          <div className="flex flex-col justify-between gap-8 sm:gap-12 lg:flex-row lg:items-end">
+
             <div>
-              <p className="text-xs font-black uppercase tracking-[0.25em] text-black/50">
+              <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/50 sm:text-xs sm:tracking-[0.25em]">
                 Questions?
               </p>
 
-              <h2 className="mt-5 max-w-3xl text-5xl font-black leading-[0.95] tracking-[-0.05em] sm:text-6xl lg:text-8xl">
+              <h2 className="mt-4 text-[clamp(2.8rem,10vw,6rem)] font-black leading-[0.92] tracking-[-0.06em] sm:mt-5 sm:text-6xl lg:text-8xl">
                 Let&apos;s talk
                 <br />
                 about it.
@@ -362,11 +347,10 @@ export default function TermsPage() {
 
             <Link
               href="/contact"
-              className="group inline-flex w-fit items-center gap-4 rounded-full bg-[#111313] px-7 py-4 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-1"
+              className="group inline-flex w-full items-center justify-center gap-4 rounded-full bg-[#111313] px-6 py-4 text-sm font-bold text-white transition-all duration-300 hover:-translate-y-1 sm:w-fit sm:px-7"
             >
               Contact us
-
-              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight className="h-4 w-4 shrink-0 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
 
           </div>
